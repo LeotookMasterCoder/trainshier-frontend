@@ -15,6 +15,7 @@ export class LoginComponent implements OnInit {
   errorMessage: string = '';
   darkMode: boolean = false;
   isLoading: boolean = false;
+  showMobileDemos: boolean = false;
 
   // RFID Scanner logic
   showRfidModal: boolean = false;

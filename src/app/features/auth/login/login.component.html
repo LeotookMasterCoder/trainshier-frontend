@@ -47,6 +47,29 @@
 
       <h2>Iniciar sesión</h2>
 
+      <!-- Cuentas Demo Desplegables para Móviles -->
+      <div class="mobile-demo-accounts-container">
+        <button type="button" class="mobile-demo-toggle-btn" (click)="showMobileDemos = !showMobileDemos">
+          <span>🔑 Ver Cuentas Demo Clicables</span>
+          <span class="arrow-indicator">{{ showMobileDemos ? '▲' : '▼' }}</span>
+        </button>
+        
+        <div class="mobile-demo-list" *ngIf="showMobileDemos">
+          <button type="button" class="mobile-demo-item" (click)="fillDemo('aprendiz'); showMobileDemos = false">
+            <span class="mobile-demo-role">Aprendiz</span>
+            <span class="mobile-demo-mail">aprendiz&#64;trainshier.com</span>
+          </button>
+          <button type="button" class="mobile-demo-item" (click)="fillDemo('instructor'); showMobileDemos = false">
+            <span class="mobile-demo-role">Instructor</span>
+            <span class="mobile-demo-mail">instructor&#64;trainshier.com</span>
+          </button>
+          <button type="button" class="mobile-demo-item" (click)="fillDemo('admin'); showMobileDemos = false">
+            <span class="mobile-demo-role">Administrador</span>
+            <span class="mobile-demo-mail">admin&#64;trainshier.com</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Alert Error Reusable -->
       <div class="alert error" [class.show]="errorMessage">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
