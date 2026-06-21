@@ -102,6 +102,17 @@ export class RegisterComponent implements OnInit {
 
   }
 
+  autofill(): void {
+    const random = Math.floor(1000 + Math.random() * 9000);
+    this.form.patchValue({
+      fullName: 'Cajero Aprendiz Simulado',
+      username: `cajero${random}#${random}`,
+      role: 'aprendiz',
+      email: `cajero.simulado.${random}@trainshier.com`,
+      password: 'Password123*'
+    });
+  }
+
   register():void {
 
     if(this.form.invalid){

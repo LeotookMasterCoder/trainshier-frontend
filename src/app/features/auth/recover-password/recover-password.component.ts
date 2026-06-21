@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-recover-password',
@@ -33,8 +34,9 @@ export class RecoverPasswordComponent implements OnInit {
   });
 
   constructor(
-    private fb:FormBuilder,
-    private router:Router
+    private fb: FormBuilder,
+    private router: Router,
+    private authService: AuthService
   ){}
 
   ngOnInit(): void {
@@ -74,12 +76,20 @@ export class RecoverPasswordComponent implements OnInit {
       return;
     }
 
-    this.successMessage =
-      'Contraseña actualizada correctamente.';
-
-    setTimeout(()=>{
-      this.router.navigate(['/login']);
-    },1500);
+    this.authService.recoverPassword({
+      email: this.form.value.email,
+      newPassword: password
+    }).subscribe({
+      next: (res) => {
+        this.successMessage = res.message || 'Contraseña actualizada correctamente.';
+        setTimeout(()=>{
+          this.router.navigate(['/login']);
+        },1500);
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'Error al restablecer contraseña. El correo podría no estar registrado.';
+      }
+    });
   }
 
   back():void{

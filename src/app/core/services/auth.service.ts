@@ -55,6 +55,12 @@ export class AuthService {
             String(response.userId)
           );
 
+          // Store login timestamp (represented in milliseconds)
+          localStorage.setItem(
+            'login_timestamp',
+            String(Date.now())
+          );
+
         })
 
       );
@@ -80,8 +86,29 @@ export class AuthService {
           localStorage.setItem('role', response.role);
           localStorage.setItem('name', response.name);
           localStorage.setItem('userId', String(response.userId));
+          // Store login timestamp (represented in milliseconds)
+          localStorage.setItem('login_timestamp', String(Date.now()));
         })
       );
+  }
+
+  recoverPassword(data: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/recover-password`, data);
+  }
+
+  checkTokenExpiration(): boolean {
+    const token = localStorage.getItem('token');
+    const timestampStr = localStorage.getItem('login_timestamp');
+    if (!token || !timestampStr) {
+      return false;
+    }
+    const timestamp = Number(timestampStr);
+    const duration = 10 * 60 * 1000; // 10 minutes in milliseconds (600,000 ms)
+    if (Date.now() - timestamp > duration) {
+      this.logout();
+      return true; // Expiró y se limpió la sesión
+    }
+    return false; // Sesión válida
   }
 
   logout(): void {
