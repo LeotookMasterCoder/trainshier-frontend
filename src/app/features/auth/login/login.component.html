@@ -111,6 +111,18 @@
           {{ isLoading ? 'Cargando...' : 'Ingresar' }}
         </button>
 
+        <!-- RFID Access Button -->
+        <button 
+          *ngIf="!showConfirm" 
+          class="btn btn-secondary rfid-btn" 
+          type="button"
+          (click)="showRfidModal = true"
+          style="margin-top: 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width: 18px; height: 18px;"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="12" y1="4" x2="12" y2="20"/><circle cx="12" cy="12" r="2"/></svg>
+          Acceso con Tarjeta RFID
+        </button>
+
       </form>
 
       <div class="bottom-links">
@@ -121,6 +133,40 @@
 
     </div>
 
+  </div>
+
+  <!-- RFID Swipe Modal -->
+  <div class="rfid-modal-overlay" *ngIf="showRfidModal">
+    <div class="rfid-modal">
+      <div class="rfid-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 48px; height: 48px; color: var(--accent);"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
+      </div>
+      <h3>Lectura de Tarjeta RFID</h3>
+      <p>Desliza tu tarjeta física sobre el lector ahora.</p>
+      
+      <div class="rfid-manual-entry">
+        <p class="muted">O selecciona un código demo para simular:</p>
+        <div class="rfid-demos">
+          <button type="button" class="tag" (click)="rfidInput = '1029384756'">Aprendiz (1029384756)</button>
+          <button type="button" class="tag" (click)="rfidInput = '5678901234'">Instructor (5678901234)</button>
+          <button type="button" class="tag" (click)="rfidInput = '9876543210'">Admin (9876543210)</button>
+        </div>
+        <input 
+          #rfidManualInput
+          type="text" 
+          placeholder="Código de Tarjeta RFID"
+          class="manual-rfid-input"
+          [value]="rfidInput"
+          (input)="rfidInput = rfidManualInput.value"
+          (keyup.enter)="loginWithRfid(rfidManualInput.value)"
+        >
+      </div>
+
+      <div class="rfid-actions">
+        <button type="button" class="btn btn-secondary" (click)="showRfidModal = false">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="loginWithRfid(rfidManualInput.value)">Ingresar</button>
+      </div>
+    </div>
   </div>
 
 </div>

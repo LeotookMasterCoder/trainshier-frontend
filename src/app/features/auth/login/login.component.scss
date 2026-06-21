@@ -338,3 +338,148 @@
     padding: 48px 16px 24px;
   }
 }
+
+/* ===== RFID BUTTON & MODAL ===== */
+.rfid-btn {
+  background: transparent;
+  border: 1px dashed var(--gold);
+  color: var(--gold);
+  transition: var(--transition);
+
+  &:hover {
+    background: rgba(212, 160, 23, 0.08);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+}
+
+.rfid-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  animation: fadeIn 0.25s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.rfid-modal {
+  width: 100%;
+  max-width: 440px;
+  background: var(--surface);
+  border: 1px solid var(--gold);
+  border-radius: var(--r-lg);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+  padding: 32px;
+  text-align: center;
+  animation: rise .3s ease both;
+
+  h3 {
+    font: 700 20px/1.2 var(--font-display);
+    margin: 16px 0 8px;
+    color: var(--text);
+  }
+
+  p {
+    font-size: 14px;
+    color: var(--text-soft);
+    margin-bottom: 24px;
+  }
+}
+
+.rfid-icon {
+  width: 72px;
+  height: 72px;
+  background: rgba(212, 160, 23, 0.1);
+  border: 1px solid var(--gold);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin: 0 auto;
+  
+  svg {
+    animation: pulse 1.5s infinite alternate;
+  }
+}
+
+@keyframes pulse {
+  from { transform: scale(1); opacity: 0.8; }
+  to { transform: scale(1.1); opacity: 1; }
+}
+
+.rfid-manual-entry {
+  margin: 20px 0 24px;
+  text-align: left;
+  border-top: 1px solid var(--border-soft);
+  padding-top: 20px;
+
+  .muted {
+    font-size: 12.5px;
+    color: var(--text-mute);
+    margin-bottom: 8px;
+  }
+}
+
+.rfid-demos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+
+  .tag {
+    background: var(--btn2-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    color: var(--text-soft);
+    font-size: 11px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: var(--transition);
+
+    &:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(212, 160, 23, 0.04);
+    }
+  }
+}
+
+.manual-rfid-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--input-bg, var(--surface-2));
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text);
+  font-family: monospace;
+  font-size: 16px;
+  letter-spacing: 1px;
+  transition: var(--transition);
+
+  &:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(212, 160, 23, 0.2);
+  }
+}
+
+.rfid-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+
+  .btn {
+    padding: 10px 20px;
+    font-size: 13.5px;
+  }
+}

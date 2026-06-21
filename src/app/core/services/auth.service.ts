@@ -72,6 +72,18 @@ export class AuthService {
 
   }
 
+  rfidLogin(rfidUid: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/rfid-login`, { rfidUid })
+      .pipe(
+        tap(response => {
+          localStorage.setItem('token', response.token);
+          localStorage.setItem('role', response.role);
+          localStorage.setItem('name', response.name);
+          localStorage.setItem('userId', String(response.userId));
+        })
+      );
+  }
+
   logout(): void {
 
     localStorage.clear();

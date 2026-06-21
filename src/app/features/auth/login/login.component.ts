@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -15,6 +15,64 @@ export class LoginComponent implements OnInit {
   errorMessage: string = '';
   darkMode: boolean = false;
   isLoading: boolean = false;
+
+  // RFID Scanner logic
+  showRfidModal: boolean = false;
+  rfidInput: string = '';
+  private rfidBuffer: string = '';
+  private lastKeyTime: number = 0;
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    // Only capture global inputs if we are not actively typing in an input field (to avoid intercepting email/password fields)
+    const activeElement = document.activeElement?.tagName;
+    if (activeElement === 'INPUT' || activeElement === 'TEXTAREA') {
+      return;
+    }
+
+    const currentTime = Date.now();
+    
+    // USB card readers simulate typing very fast (typically < 30ms between keystrokes)
+    if (currentTime - this.lastKeyTime > 50) {
+      this.rfidBuffer = ''; 
+    }
+    
+    this.lastKeyTime = currentTime;
+
+    if (event.key >= '0' && event.key <= '9') {
+      this.rfidBuffer += event.key;
+    } else if (event.key === 'Enter') {
+      if (this.rfidBuffer.length >= 8) {
+        event.preventDefault();
+        this.loginWithRfid(this.rfidBuffer);
+        this.rfidBuffer = '';
+      }
+    }
+  }
+
+  loginWithRfid(uid: string): void {
+    if (!uid) return;
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.showRfidModal = false;
+    this.authService.rfidLogin(uid).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        
+        // Store details in localStorage just like regular login
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('role', response.role);
+        localStorage.setItem('name', response.name);
+        localStorage.setItem('userId', String(response.userId));
+
+        this.router.navigate(['/home']);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.errorMessage = err.error?.message || 'Tarjeta RFID no registrada o inválida';
+      }
+    });
+  }
 
   form = this.fb.group({
     email: [
