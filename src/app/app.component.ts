@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from './core/services/auth.service';
 
 @Component({
   selector:'app-root',
@@ -9,7 +10,12 @@ import { Router } from '@angular/router';
 
 export class AppComponent implements OnInit {
 
-  constructor(private router:Router){}
+  isOffline: boolean = !navigator.onLine;
+
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ){}
 
   ngOnInit(): void {
     const savedTheme = localStorage.getItem('theme');
@@ -21,6 +27,33 @@ export class AppComponent implements OnInit {
       document.body.classList.remove('dark-mode');
       root.setAttribute('data-theme', 'light');
     }
+
+    // Check token expiration on load
+    this.checkSession();
+
+    // Check token expiration every 5 seconds
+    setInterval(() => {
+      this.checkSession();
+    }, 5000);
+  }
+
+  private checkSession(): void {
+    if (localStorage.getItem('token')) {
+      const expired = this.authService.checkTokenExpiration();
+      if (expired) {
+        this.router.navigate(['/login']);
+      }
+    }
+  }
+
+  @HostListener('window:offline')
+  onOffline(): void {
+    this.isOffline = true;
+  }
+
+  @HostListener('window:online')
+  onOnline(): void {
+    this.isOffline = false;
   }
 
   showNavbar():boolean{

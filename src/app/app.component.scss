@@ -20,3 +20,33 @@
 
   z-index: 999;
 }
+
+.offline-banner {
+  background: linear-gradient(90deg, #d4af37 0%, #b28a1a 100%);
+  color: #111;
+  text-align: center;
+  padding: 12px 20px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 10001;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+

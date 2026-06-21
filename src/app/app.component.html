@@ -1,3 +1,7 @@
+<div class="offline-banner" *ngIf="isOffline">
+  <span>⚠️ Información desactualizada: Si quiere revisar nuestra última versión de los cambios, conéctese a una red de internet.</span>
+</div>
+
 <app-navbar *ngIf="showNavbar()"></app-navbar>
 
 <router-outlet></router-outlet>
