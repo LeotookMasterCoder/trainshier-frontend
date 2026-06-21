@@ -1,0 +1,118 @@
+<nav class="navbar">
+
+  <!-- LOGO -->
+
+  <div class="left">
+
+    <img
+      src="assets/img/BannerTrainShier2.jpeg"
+      class="logo"
+      routerLink="/home"
+    >
+
+  </div>
+
+  <!-- MENÚ -->
+
+  <div class="center">
+
+    <a
+      routerLink="/home"
+      routerLinkActive="active-link"
+      [routerLinkActiveOptions]="{exact:true}"
+    >
+      Inicio
+    </a>
+
+    <a
+      *ngIf="role==='APRENDIZ'"
+      routerLink="/simulator"
+      routerLinkActive="active-link"
+    >
+      Simulador
+    </a>
+
+    <a
+      *ngIf="role==='APRENDIZ'"
+      routerLink="/transactions"
+      routerLinkActive="active-link"
+    >
+      Transacciones
+    </a>
+
+    <a
+      *ngIf="role==='INSTRUCTOR'"
+      routerLink="/evaluation"
+      routerLinkActive="active-link"
+    >
+      Evaluaciones
+    </a>
+
+    <a
+      *ngIf="role==='INSTRUCTOR'"
+      routerLink="/reports"
+      routerLinkActive="active-link"
+    >
+      Reportes
+    </a>
+
+    <a
+      *ngIf="role==='ADMIN'"
+      routerLink="/statistics"
+      routerLinkActive="active-link"
+    >
+      Estadísticas
+    </a>
+
+  </div>
+
+  <!-- ACCIONES -->
+
+  <div class="right">
+
+    <button
+      class="theme-btn"
+      (click)="toggleTheme()"
+      [attr.aria-label]="darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+    >
+      <div class="theme-icon-container">
+        <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </div>
+    </button>
+
+    <div
+      class="profile"
+      routerLink="/profile"
+    >
+
+      <img
+        [src]="profileImage"
+        alt="Perfil"
+      >
+
+    </div>
+
+    <button
+      *ngIf="isLoggedIn"
+      class="logout-btn"
+      (click)="logout()"
+    >
+      Salir
+    </button>
+
+  </div>
+
+</nav>
