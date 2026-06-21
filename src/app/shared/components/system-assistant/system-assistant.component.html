@@ -1,0 +1,90 @@
+<!-- BURBUJA FLOTANTE DEL ASISTENTE -->
+<button 
+  class="assistant-trigger" 
+  [class.active]="isOpen" 
+  (click)="toggleChat()" 
+  title="Asistente de Ayuda TrainShier">
+  <span class="icon">🤖</span>
+  <span class="pulse-ring"></span>
+</button>
+
+<!-- PANEL DE CHAT DEL ASISTENTE -->
+<div class="assistant-chat-panel" [class.open]="isOpen">
+  <!-- CABECERA -->
+  <div class="chat-header">
+    <div class="bot-info">
+      <span class="bot-avatar">🤖</span>
+      <div>
+        <h3>Soporte TrainShier</h3>
+        <span class="status">Agente IA de orientación • En línea</span>
+      </div>
+    </div>
+    <button class="close-btn" (click)="toggleChat()" title="Cerrar chat">✕</button>
+  </div>
+
+  <!-- SUGERENCIAS RÁPIDAS (CHIPS) -->
+  <div class="chat-suggestions-container" *ngIf="messages.length <= 2">
+    <span class="suggestions-title">💡 Preguntas sugeridas:</span>
+    <div class="suggestions-list">
+      <button 
+        *ngFor="let sug of suggestions" 
+        class="suggestion-chip" 
+        (click)="selectSuggestion(sug.text)">
+        {{ sug.text }}
+      </button>
+    </div>
+  </div>
+
+  <!-- CUERPO DE MENSAJES -->
+  <div class="chat-body" #chatScrollContainer>
+    <div class="messages-list">
+      <div 
+        *ngFor="let msg of messages" 
+        class="message-wrapper" 
+        [class.user]="msg.sender === 'Tú'"
+        [class.bot]="msg.sender === 'Asistente'">
+        
+        <div class="avatar" *ngIf="msg.sender === 'Asistente'">🤖</div>
+        
+        <div class="message-bubble-container">
+          <span class="sender-name">{{ msg.sender }}</span>
+          <div class="message-bubble">
+            <!-- Renderizado simple de markdown básico (negrita, código, listas) -->
+            <p [innerHTML]="msg.text"></p>
+          </div>
+          <span class="time">{{ msg.timestamp | date:'shortTime' }}</span>
+        </div>
+      </div>
+
+      <!-- ANIMACIÓN DE ESCRIBIENDO -->
+      <div class="message-wrapper bot" *ngIf="isTyping">
+        <div class="avatar">🤖</div>
+        <div class="message-bubble-container">
+          <span class="sender-name">Asistente</span>
+          <div class="message-bubble typing-bubble">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORMULARIO DE ENTRADA -->
+  <div class="chat-footer">
+    <input 
+      type="text" 
+      placeholder="Haz una pregunta sobre el sistema..." 
+      [(ngModel)]="chatInput" 
+      (keyup.enter)="sendMessage()"
+      [disabled]="isTyping">
+    <button 
+      class="send-btn" 
+      (click)="sendMessage()" 
+      [disabled]="isTyping || !chatInput.trim()"
+      title="Enviar mensaje">
+      <span>➔</span>
+    </button>
+  </div>
+</div>

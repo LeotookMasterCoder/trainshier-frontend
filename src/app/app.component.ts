@@ -65,4 +65,8 @@ export class AppComponent implements OnInit {
       '/recover-password'
     ].includes(this.router.url);
   }
+
+  showAssistant(): boolean {
+    return this.router.url !== '/simulator';
+  }
 }

@@ -18,6 +18,7 @@ import { AppComponent } from './app.component';
 
 import { NavbarComponent } from './shared/components/navbar/navbar.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
+import { SystemAssistantComponent } from './shared/components/system-assistant/system-assistant.component';
 
 
 import { DashboardComponent } from './features/dashboard/dashboard.component';
@@ -52,6 +53,7 @@ import { CoreModule } from './core/core.module';
 
     NavbarComponent,
     FooterComponent,
+    SystemAssistantComponent,
 
     DashboardComponent,
 

@@ -684,6 +684,65 @@ button {
   }
 }
 
+@media (max-width: 500px) {
+  .card {
+    padding: 14px !important; /* Reducir padding de tarjeta en móviles */
+  }
+
+  .scan-section {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+
+    input {
+      flex: 1 1 auto !important;
+      width: 100% !important;
+      min-width: 0 !important;
+    }
+
+    button {
+      flex: 1 1 auto !important;
+      width: 100% !important;
+      min-width: 0 !important;
+    }
+
+    .scanner-cam-btn {
+      flex: 1 1 auto !important;
+      width: 100% !important;
+      min-width: 0 !important;
+    }
+  }
+
+  .difficulty-options {
+    grid-template-columns: 1fr !important; /* Apilar Fácil, Media y Difícil */
+    gap: 8px !important;
+  }
+
+  .difficulty-btn {
+    padding: 12px 10px !important;
+    font-size: 0.9rem !important;
+    white-space: normal !important;
+  }
+
+  .chat-input-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+
+    input {
+      width: 100% !important;
+    }
+
+    button {
+      width: 100% !important;
+    }
+  }
+
+  .invoice-row {
+    padding: 4px 0 !important;
+  }
+}
+
 .notification-toast-container {
   position: fixed;
   top: 20px;
@@ -811,10 +870,10 @@ button {
     }
 
     &.active {
-      background: color-mix(in srgb, var(--accent) 15%, var(--surface));
-      border-color: var(--accent);
-      color: var(--accent);
-      box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 20%, transparent);
+      background: var(--accent) !important;
+      color: var(--accent-ink) !important;
+      border-color: var(--accent) !important;
+      box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 30%, transparent) !important;
     }
   }
 
