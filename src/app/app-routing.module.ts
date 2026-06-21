@@ -11,6 +11,7 @@ import { RecoverPasswordComponent } from './features/auth/recover-password/recov
 import { SimulatorComponent } from './features/simulator/simulator/simulator.component';
 
 import { ProfileComponent } from './features/profile/profile.component';
+import { ManualComponent } from './features/manual/manual.component';
 
 import { TransactionFormComponent } from './features/transactions/transaction-form/transaction-form.component';
 
@@ -30,6 +31,11 @@ const routes: Routes = [
   {
     path: 'home',
     component: HomeComponent
+  },
+
+  {
+    path: 'manual',
+    component: ManualComponent
   },
 
   {

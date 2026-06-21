@@ -92,6 +92,9 @@
             [disabled]="!simulationStarted"
             autofocus>
           <button (click)="registerByCode()" [disabled]="!simulationStarted">Registrar Código</button>
+          <button class="scanner-cam-btn" (click)="showScanner = true" [disabled]="!simulationStarted">
+            📷 Escanear Cámara
+          </button>
         </div>
       </div>
 
@@ -134,6 +137,34 @@
           </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- CHAT INTERACTIVO CON EL CLIENTE (IA GEMINI) -->
+      <div class="card customer-chat-card" *ngIf="simulationStarted">
+        <h2>Conversar con {{ currentCustomer.name }} (IA Cliente)</h2>
+        <div class="chat-messages-container" #chatContainer>
+          <div *ngFor="let msg of chatMessages" class="chat-bubble-wrapper" [class.user]="msg.sender === 'Cajero (Tú)'" [class.system]="msg.sender === 'Sistema'">
+            <div class="chat-sender">{{ msg.sender }}</div>
+            <div class="chat-bubble">
+              {{ msg.text }}
+            </div>
+          </div>
+          <div class="chat-loading-bubble" *ngIf="isChatLoading">
+            <span>El cliente está pensando...</span>
+          </div>
+        </div>
+        
+        <div class="chat-input-row">
+          <input 
+            type="text" 
+            placeholder="Pregúntale detalles de su compra o responde a sus inquietudes..." 
+            [(ngModel)]="chatMessageInput" 
+            (keyup.enter)="sendMessageToCustomer()"
+            [disabled]="isChatLoading">
+          <button (click)="sendMessageToCustomer()" [disabled]="isChatLoading || !chatMessageInput.trim()">
+            Enviar 💬
+          </button>
+        </div>
       </div>
 
       <!-- VISUALIZADOR DE INVENTARIO -->
@@ -315,6 +346,63 @@
         </div>
       </div>
 
+      <!-- CONFIGURACIÓN DE ESCENARIO (SOLO ANTES DE INICIAR) -->
+      <div class="card scenario-settings-card" *ngIf="!simulationStarted">
+        <h2>Configurar Escenario</h2>
+        
+        <div class="form-group">
+          <label>Nivel de Dificultad:</label>
+          <div class="difficulty-options">
+            <button 
+              type="button" 
+              class="difficulty-btn" 
+              [class.active]="selectedDifficulty === 'Fácil'" 
+              (click)="selectedDifficulty = 'Fácil'">
+              🟢 Fácil
+            </button>
+            <button 
+              type="button" 
+              class="difficulty-btn" 
+              [class.active]="selectedDifficulty === 'Media'" 
+              (click)="selectedDifficulty = 'Media'">
+              🟡 Media
+            </button>
+            <button 
+              type="button" 
+              class="difficulty-btn" 
+              [class.active]="selectedDifficulty === 'Difícil'" 
+              (click)="selectedDifficulty = 'Difícil'">
+              🔴 Difícil
+            </button>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="moodSelect">Actitud del Cliente:</label>
+          <select id="moodSelect" [(ngModel)]="selectedMood" class="mood-select">
+            <option value="Amable">😊 Amable</option>
+            <option value="Impaciente">⏱️ Impaciente</option>
+            <option value="Enojado">😠 Enojado</option>
+            <option value="Confundido">❓ Confundido</option>
+          </select>
+        </div>
+        
+        <div class="scenario-preview-desc">
+          <p *ngIf="selectedMood === 'Amable'">
+            <strong>Cliente Amable:</strong> Tiene mucha paciencia (5/5). El tiempo baja lentamente y tolera bien las demoras.
+          </p>
+          <p *ngIf="selectedMood === 'Impaciente'">
+            <strong>Cliente Impaciente:</strong> Tiene poca paciencia (3/5). El tiempo baja rápido y su satisfacción cae más rápido.
+          </p>
+          <p *ngIf="selectedMood === 'Enojado'">
+            <strong>Cliente Enojado:</strong> Tiene muy mala actitud y baja paciencia (2/5). Exige un cobro perfecto y rápido.
+          </p>
+          <p *ngIf="selectedMood === 'Confundido'">
+            <strong>Cliente Confundido:</strong> Hará preguntas sobre precios y descuentos del calendario comercial.
+          </p>
+        </div>
+      </div>
+
       <!-- CONTROLES GLOBALES DE LA COMPRA -->
       <div class="actions vertical-actions">
         <button class="primary-btn" *ngIf="!simulationStarted" (click)="startSimulation()">Iniciar Simulación</button>
@@ -323,6 +411,40 @@
 
     </div>
 
+  </div>
+
+  <!-- ZXING WEBCAM SCANNER OVERLAY -->
+  <div class="scanner-modal-overlay" *ngIf="showScanner">
+    <div class="scanner-modal">
+      <div class="scanner-modal-header">
+        <h3>Escanear Código de Barras (Cámara)</h3>
+        <button class="close-btn" (click)="showScanner = false">✕</button>
+      </div>
+      
+      <div class="scanner-device-select" *ngIf="hasDevices">
+        <label for="cameraSelect">Seleccionar Cámara:</label>
+        <select id="cameraSelect" (change)="onDeviceSelectChange($any($event.target).value)">
+          <option *ngFor="let device of availableDevices" [value]="device.deviceId" [selected]="currentDevice?.deviceId === device.deviceId">
+            {{ device.label || 'Cámara ' + device.deviceId }}
+          </option>
+        </select>
+      </div>
+      
+      <div class="scanner-preview-window">
+        <zxing-scanner
+          [device]="currentDevice"
+          (scanSuccess)="onCodeResult($event)"
+          (camerasFound)="onCamerasFound($event)">
+        </zxing-scanner>
+        
+        <div class="scanner-laser-line"></div>
+      </div>
+      
+      <div class="scanner-modal-footer">
+        <p class="scanner-tip">Enfoque el código de barras impreso en el producto frente a la lente.</p>
+        <button class="btn-cancel" (click)="showScanner = false">Cerrar Visor</button>
+      </div>
+    </div>
   </div>
 
 </div>

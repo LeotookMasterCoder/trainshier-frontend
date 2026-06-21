@@ -1,7 +1,9 @@
 import { Component, OnInit, ElementRef, ViewChild, HostListener } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { ProductService } from '../../../core/services/product.service';
 import { TransactionService } from '../../../core/services/transaction.service';
 import { ReportService } from '../../../core/services/report.service';
+import { environment } from '../../../../environments/environment';
 
 interface Product {
   id: number;
@@ -95,12 +97,28 @@ export class SimulatorComponent implements OnInit {
   discountValue = 0;
 
   /* =========================================
-      CLIENTE IA
+      CLIENTE IA & CONFIGURACIONES AVANZADAS
   ========================================= */
+  selectedDifficulty: string = 'Fácil';
+  selectedMood: string = 'Amable';
+  patienceValue: number = 100;
+
+  chatMessages: { sender: string; text: string }[] = [];
+  chatMessageInput: string = '';
+  isChatLoading: boolean = false;
+
+  // Barcode scanner logic (webcam and physical emulated scanner)
+  showScanner: boolean = false;
+  hasDevices: boolean = false;
+  availableDevices: MediaDeviceInfo[] = [];
+  currentDevice: MediaDeviceInfo | undefined = undefined;
+  private scanBuffer: string = '';
+  private lastScanTime: number = 0;
+
   currentCustomer: any = {
     name: '',
     mood: '',
-    patience: 5,
+    patience: 100,
     request: '',
     message: ''
   };
@@ -190,7 +208,8 @@ export class SimulatorComponent implements OnInit {
   constructor(
     private productService: ProductService,
     private transactionService: TransactionService,
-    private reportService: ReportService
+    private reportService: ReportService,
+    private http: HttpClient
   ) {}
 
   /* =========================================
@@ -449,21 +468,16 @@ export class SimulatorComponent implements OnInit {
     }
 
     this.simulationStarted = true;
+    this.simulationFinished = false;
     this.showToast('Simulación iniciada');
     this.errorMessage = '';
+    this.score = 0;
+    this.salesCount = 0;
+    this.servedProducts = 0;
+    this.totalClients = 1;
 
-    clearInterval(this.timer);
-    this.setDifficultyTime();
-
-    this.timer = setInterval(() => {
-      this.timeLeft--;
-
-      if (this.timeLeft <= 0) {
-        clearInterval(this.timer);
-        this.customerSatisfaction = Math.max(0, this.customerSatisfaction - 30);
-        this.showToast('El cliente perdió la paciencia', true);
-      }
-    }, 1000);
+    this.generateCustomerScenario();
+    this.startTimerForCurrentCustomer();
   }
 
   setDifficultyTime(): void {
@@ -484,6 +498,55 @@ export class SimulatorComponent implements OnInit {
     }
 
     this.timeLeft = this.currentCustomer.patience * baseTimePerPatiencePoint;
+  }
+
+  startTimerForCurrentCustomer(): void {
+    clearInterval(this.timer);
+    this.setDifficultyTime();
+    
+    let tickMs = 1000;
+    if (this.difficulty === 'FACIL') {
+      tickMs = 1200;
+    } else if (this.difficulty === 'DIFICIL') {
+      tickMs = 800;
+    }
+
+    this.timer = setInterval(() => {
+      this.timeLeft--;
+      
+      let patienceReduction = 1.5;
+      if (this.currentCustomer.mood === 'Impaciente') {
+        patienceReduction = 3.0;
+      } else if (this.currentCustomer.mood === 'Enojado') {
+        patienceReduction = 4.5;
+      } else if (this.currentCustomer.mood === 'Confundido') {
+        patienceReduction = 2.0;
+      }
+      
+      if (this.difficulty === 'DIFICIL') {
+        patienceReduction *= 1.5;
+      } else if (this.difficulty === 'FACIL') {
+        patienceReduction *= 0.7;
+      }
+      
+      this.customerSatisfaction = Math.max(0, this.customerSatisfaction - patienceReduction);
+
+      if (this.timeLeft <= 0 || this.customerSatisfaction <= 0) {
+        clearInterval(this.timer);
+        this.customerSatisfaction = 0;
+        this.showToast('El cliente ha perdido la paciencia y se ha retirado.', true);
+        this.score = Math.max(0, this.score - 50);
+        
+        setTimeout(() => {
+          if (this.simulationStarted) {
+            this.clearCart();
+            this.generateNextCustomer();
+            this.totalClients++;
+            this.startTimerForCurrentCustomer();
+          }
+        }, 2000);
+      }
+    }, tickMs);
   }
 
   /* =========================================
@@ -667,21 +730,12 @@ export class SimulatorComponent implements OnInit {
     this.cashReceived = null;
     this.change = 0;
 
-    this.generateCustomer();
-
     if (this.simulationStarted) {
-      clearInterval(this.timer);
-      this.setDifficultyTime();
-
-      this.timer = setInterval(() => {
-        this.timeLeft--;
-
-        if (this.timeLeft <= 0) {
-          clearInterval(this.timer);
-          this.customerSatisfaction = Math.max(0, this.customerSatisfaction - 30);
-          this.showToast('El cliente perdió la paciencia', true);
-        }
-      }, 1000);
+      this.generateNextCustomer();
+      this.totalClients++;
+      this.startTimerForCurrentCustomer();
+    } else {
+      this.generateCustomer();
     }
   }
 
@@ -784,5 +838,219 @@ export class SimulatorComponent implements OnInit {
 
   cambiar(): void {
     this.h = !this.h;
+  }
+
+  /* =========================================
+      SCENARIO SELECTOR, WEB CAMERA SCANNER, AND AI CHAT CUSTOMER METHODS
+  ========================================= */
+  generateCustomerScenario(): void {
+    const names = ['Carlos Gómez', 'Laura Rodríguez', 'Patricia Jaramillo', 'Juan Carlos Pérez', 'Martha Lucía Pinzón', 'Andrés Felipe Castro', 'Sofía Beltrán'];
+    const selectedName = names[Math.floor(Math.random() * names.length)];
+    
+    this.difficulty = this.selectedDifficulty.toUpperCase();
+    const mood = this.selectedMood;
+    
+    this.currentCustomer.name = selectedName;
+    this.currentCustomer.mood = mood;
+    
+    let patience = 5;
+    let request = '';
+    let message = '';
+    
+    if (mood === 'Amable') {
+      patience = 5;
+      this.customerSatisfaction = 100;
+      request = '2 Leches 1L, 1 Pan Integral';
+      message = 'Hola, buenos días. ¿Cómo estás? Quisiera llevar esto, por favor.';
+    } else if (mood === 'Impaciente') {
+      patience = 3;
+      this.customerSatisfaction = 75;
+      request = '3 Gaseosas Cola, 1 Chocolate';
+      message = 'Hola. Tengo el tiempo justo, por favor cobra esto rápido.';
+    } else if (mood === 'Enojado') {
+      patience = 2;
+      this.customerSatisfaction = 50;
+      request = '1 Arroz Premium, 2 Chocolates';
+      message = 'El servicio siempre está demorado aquí. Espero que hoy cobren bien.';
+    } else if (mood === 'Confundido') {
+      patience = 4;
+      this.customerSatisfaction = 85;
+      request = '1 Pan Integral, 1 Leche 1L';
+      message = 'Disculpe, ¿este producto tiene el descuento del calendario de hoy? No entiendo.';
+    }
+    
+    this.currentCustomer.patience = patience;
+    this.currentCustomer.request = request;
+    this.currentCustomer.message = message;
+    
+    this.chatMessages = [
+      { sender: 'Sistema', text: `Simulación iniciada. Cliente: ${selectedName}. Actitud: ${mood}. Dificultad: ${this.selectedDifficulty}.` },
+      { sender: selectedName, text: message }
+    ];
+  }
+
+  generateNextCustomer(): void {
+    const moods = ['Amable', 'Impaciente', 'Enojado', 'Confundido'];
+    const randomMood = moods[Math.floor(Math.random() * moods.length)];
+    
+    const names = ['Mauricio Díaz', 'Elena Varela', 'Santiago Ortega', 'Diana Marín', 'Roberto Soler'];
+    const selectedName = names[Math.floor(Math.random() * names.length)];
+    
+    this.currentCustomer.name = selectedName;
+    this.currentCustomer.mood = randomMood;
+    
+    let patience = 5;
+    let request = '';
+    let message = '';
+    
+    if (randomMood === 'Amable') {
+      patience = 5;
+      this.customerSatisfaction = 100;
+      request = '1 Arroz Premium, 1 Gaseosa Cola';
+      message = 'Buenas tardes, espero no molestar. Cobraría esto, por favor.';
+    } else if (randomMood === 'Impaciente') {
+      patience = 3;
+      this.customerSatisfaction = 75;
+      request = '2 Pan Integral, 2 Gaseosas Cola';
+      message = 'Rápido por favor, se me pasa el autobús.';
+    } else if (randomMood === 'Enojado') {
+      patience = 2;
+      this.customerSatisfaction = 50;
+      request = '1 Leche 1L';
+      message = '¿Me va a atender ya? Hay fila.';
+    } else if (randomMood === 'Confundido') {
+      patience = 4;
+      this.customerSatisfaction = 85;
+      request = '3 Chocolates';
+      message = '¿Los chocolates tienen promoción hoy? No veo el cartel.';
+    }
+    
+    this.currentCustomer.patience = patience;
+    this.currentCustomer.request = request;
+    this.currentCustomer.message = message;
+    
+    this.chatMessages.push({ sender: 'Sistema', text: `Siguiente cliente en fila: ${selectedName} (${randomMood}).` });
+    this.chatMessages.push({ sender: selectedName, text: message });
+  }
+
+  sendMessageToCustomer(): void {
+    if (!this.chatMessageInput || !this.chatMessageInput.trim()) return;
+    if (!this.simulationStarted) {
+      this.showToast('Inicie la simulación para interactuar con el cliente', true);
+      return;
+    }
+
+    const message = this.chatMessageInput.trim();
+    this.chatMessages.push({ sender: 'Cajero (Tú)', text: message });
+    this.chatMessageInput = '';
+    this.isChatLoading = true;
+
+    const cartDesc = this.cart.map(item => `${item.quantity}x ${item.name}`).join(', ') || 'Ninguno';
+
+    const payload = {
+      customerName: this.currentCustomer.name,
+      mood: this.currentCustomer.mood,
+      difficulty: this.difficulty,
+      cartProducts: cartDesc,
+      patience: Math.round(this.customerSatisfaction),
+      message: message
+    };
+
+    this.http.post<any>(`${environment.apiUrl}/simulation/chat`, payload).subscribe({
+      next: (res) => {
+        this.isChatLoading = false;
+        if (res && res.response) {
+          this.chatMessages.push({ sender: this.currentCustomer.name, text: res.response });
+          
+          const lowerRes = res.response.toLowerCase();
+          if (lowerRes.includes('gracias') || lowerRes.includes('amable') || lowerRes.includes('entiendo')) {
+            this.customerSatisfaction = Math.min(100, this.customerSatisfaction + 5);
+          } else if (lowerRes.includes('molest') || lowerRes.includes('tarde') || lowerRes.includes('apur')) {
+            this.customerSatisfaction = Math.max(0, this.customerSatisfaction - 5);
+          }
+        }
+      },
+      error: (err) => {
+        this.isChatLoading = false;
+        console.error('Error in customer chat API:', err);
+        let fallbackReply = '... El cliente te mira sin entender mucho. "Por favor, solo cobre los productos..."';
+        if (this.currentCustomer.mood === 'Impaciente') {
+          fallbackReply = '¿Podríamos apurarnos, por favor? Tengo prisa.';
+        } else if (this.currentCustomer.mood === 'Enojado') {
+          fallbackReply = '¡Esto es el colmo! Apúrese con la cuenta o me voy.';
+        } else if (this.currentCustomer.mood === 'Confundido') {
+          fallbackReply = 'No estoy seguro de cuánto cuesta eso. ¿Tiene descuento?';
+        } else if (this.currentCustomer.mood === 'Amable') {
+          fallbackReply = 'Muchas gracias por su atención, joven. Muy amable.';
+        }
+        this.chatMessages.push({ sender: this.currentCustomer.name, text: fallbackReply });
+      }
+    });
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  handleBarcodeScanner(event: KeyboardEvent): void {
+    if (!this.simulationStarted) return;
+    
+    // Intercept keyboard emulator barcode guns
+    const activeElement = document.activeElement?.tagName;
+    
+    const currentTime = Date.now();
+    const timeDiff = currentTime - this.lastScanTime;
+    this.lastScanTime = currentTime;
+    
+    if (event.key === 'Enter') {
+      if (this.scanBuffer.length >= 6) {
+        event.preventDefault();
+        this.processScannedBarcode(this.scanBuffer);
+        this.scanBuffer = '';
+      } else {
+        this.scanBuffer = '';
+      }
+    } else if (event.key.length === 1 && ((event.key >= '0' && event.key <= '9') || (event.key >= 'a' && event.key <= 'z') || (event.key >= 'A' && event.key <= 'Z'))) {
+      if (timeDiff <= 50) {
+        this.scanBuffer += event.key;
+      } else {
+        this.scanBuffer = event.key;
+      }
+    }
+  }
+
+  processScannedBarcode(barcode: string): void {
+    const cleanBarcode = barcode.trim();
+    const product = this.products.find(
+      p => p.barcode === cleanBarcode || p.code === cleanBarcode
+    );
+
+    if (!product) {
+      this.showToast(`Producto escaneado "${cleanBarcode}" no encontrado`, true);
+      return;
+    }
+
+    if (product.stock <= 0) {
+      this.showToast(`El producto ${product.name} no tiene stock`, true);
+      return;
+    }
+
+    this.addToCart(product);
+    this.showToast(`Escaneado: ${product.name} (${product.price} COP)`);
+  }
+
+  onCodeResult(resultString: string): void {
+    this.processScannedBarcode(resultString);
+    this.showScanner = false;
+  }
+
+  onCamerasFound(devices: MediaDeviceInfo[]): void {
+    this.availableDevices = devices;
+    this.hasDevices = devices && devices.length > 0;
+    if (this.hasDevices) {
+      this.currentDevice = devices[0];
+    }
+  }
+
+  onDeviceSelectChange(selectedValue: string): void {
+    const device = this.availableDevices.find(d => d.deviceId === selectedValue);
+    this.currentDevice = device;
   }
 }
