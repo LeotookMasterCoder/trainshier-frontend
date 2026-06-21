@@ -1,0 +1,147 @@
+<div class="profile-page">
+
+  <div class="profile-container">
+
+    <div class="profile-sidebar">
+
+      <button
+        routerLink="/home"
+        class="back-btn"
+      >
+        ← Volver
+      </button>
+
+      <div class="profile-image-box">
+
+        <label>
+
+          <input
+            type="file"
+            hidden
+            accept="image/*"
+            (change)="changePhoto($event)"
+          >
+
+          <img
+            [src]="profileImage"
+            class="profile-image"
+            alt="Perfil"
+          >
+
+        </label>
+
+      </div>
+
+      <h2>{{name}}</h2>
+
+      <span class="role-badge">
+        {{role}}
+      </span>
+
+      <div class="user-id">
+        {{userId}}
+      </div>
+
+    </div>
+
+    <div class="profile-content">
+
+      <div class="content-header">
+
+        <h1>Configuración del perfil</h1>
+
+        <p>
+          Personaliza tu cuenta y tu información visible.
+        </p>
+
+      </div>
+
+      <form
+        [formGroup]="form"
+        (ngSubmit)="saveChanges()"
+      >
+
+        <div class="edit-box">
+
+          <label>Correo electrónico</label>
+
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="correo@ejemplo.com"
+          >
+
+        </div>
+
+        <div class="edit-box">
+
+          <label>Username</label>
+
+          <input
+            type="text"
+            formControlName="username"
+            placeholder="usuario#1234"
+          >
+
+        </div>
+
+        <div class="edit-box readonly">
+
+          <label>ID Único</label>
+
+          <input
+            type="text"
+            [value]="userId"
+            readonly
+          >
+
+        </div>
+
+        <div class="edit-box readonly">
+
+          <label>Nombre completo</label>
+
+          <input
+            type="text"
+            [value]="name"
+            readonly
+          >
+
+        </div>
+
+        <div class="edit-box">
+
+          <label>Fecha de nacimiento</label>
+
+          <input
+            type="date"
+            formControlName="birthDate"
+          >
+
+        </div>
+
+        <div class="save-section">
+
+          <button
+            type="submit"
+            class="save-btn"
+          >
+            Guardar cambios
+          </button>
+
+        </div>
+
+      </form>
+
+      <div
+        class="success-alert"
+        *ngIf="showSuccess"
+      >
+        Información actualizada correctamente.
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

@@ -1,0 +1,157 @@
+<div class="statistics-page">
+
+  <div class="hero">
+
+    <h1>
+      Estadísticas TrainShier
+    </h1>
+
+    <p>
+      Métricas inteligentes para evaluar el desempeño
+      de aprendices e instructores.
+    </p>
+
+  </div>
+
+  <div class="overview-grid">
+
+    <div class="overview-card">
+
+      <h2>
+        {{ totalSimulations }}
+      </h2>
+
+      <span>
+        Simulaciones Totales
+      </span>
+
+    </div>
+
+    <div class="overview-card">
+
+      <h2>
+        {{ averageScore }}%
+      </h2>
+
+      <span>
+        Promedio General
+      </span>
+
+    </div>
+
+    <div class="overview-card">
+
+      <h2>
+        {{ averageTime }}s
+      </h2>
+
+      <span>
+        Tiempo Promedio
+      </span>
+
+    </div>
+
+    <div class="overview-card">
+
+      <h2>
+        {{ activeStudents }}
+      </h2>
+
+      <span>
+        Aprendices Activos
+      </span>
+
+    </div>
+
+  </div>
+
+  <div class="stats-grid">
+
+    <div
+      class="stat-card"
+      *ngFor="let stat of stats"
+    >
+
+      <h2>
+        {{ stat.value }}
+      </h2>
+
+      <p>
+        {{ stat.title }}
+      </p>
+
+      <div class="progress-bar">
+
+        <div
+          class="progress-fill"
+          [style.width.%]="stat.progress"
+        >
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="ranking-section">
+
+    <div class="section-header">
+
+      <h2>
+        Ranking de Aprendices
+      </h2>
+
+      <select [(ngModel)]="selectedPeriod">
+
+        <option value="Semana">
+          Semana
+        </option>
+
+        <option value="Mes">
+          Mes
+        </option>
+
+        <option value="Año">
+          Año
+        </option>
+
+      </select>
+
+    </div>
+
+    <div class="ranking-list">
+
+      <div
+        class="ranking-card"
+        *ngFor="
+          let student of topStudents;
+          let i = index
+        "
+      >
+
+        <div class="position">
+
+          #{{ i + 1 }}
+
+        </div>
+
+        <div class="student-info">
+
+          <h3>
+            {{ student.name }}
+          </h3>
+
+          <span>
+            Puntaje: {{ student.score }}%
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

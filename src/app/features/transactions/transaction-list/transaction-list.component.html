@@ -1,0 +1,50 @@
+<div class="transaction-table">
+
+  <h2>Puntuación de transacciones</h2>
+
+  <table>
+
+    <thead>
+
+    <tr>
+      <th>ID</th>
+      <th>Fecha</th>
+      <th>Tipo</th>
+      <th>Cliente</th>
+      <th>Producto</th>
+      <th>Cantidad</th>
+      <th>Total</th>
+      <th>Estado</th>
+    </tr>
+
+    </thead>
+
+    <tbody>
+
+    <tr *ngFor="let t of data">
+
+      <td>{{t.id}}</td>
+      <td>{{t.date}}</td>
+      <td>{{t.type}}</td>
+      <td>{{t.client}}</td>
+      <td>{{t.product}}</td>
+      <td>{{t.quantity}}</td>
+      <td>{{t.total}}</td>
+
+      <td>
+
+          <span
+            class="status"
+            [class.success]="t.status === 'COMPLETADO'"
+            [class.error]="t.status === 'NO TERMINADO'"
+          ></span>
+
+      </td>
+
+    </tr>
+
+    </tbody>
+
+  </table>
+
+</div>

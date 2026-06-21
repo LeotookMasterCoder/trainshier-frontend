@@ -1,0 +1,104 @@
+.transaction-container{
+  width:100%;
+  min-height:100vh;
+  padding:40px 20px;
+  background:#f3f4f6;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.card{
+  width:100%;
+  max-width:500px;
+  background:white;
+  border-radius:14px;
+  padding:30px;
+  border:1px solid #d1d5db;
+}
+
+h2{
+  text-align:center;
+  margin-bottom:25px;
+  color:#111827;
+}
+
+.input-group{
+  display:flex;
+  flex-direction:column;
+  margin-bottom:18px;
+}
+
+label{
+  margin-bottom:8px;
+  font-size:14px;
+  color:#374151;
+}
+
+input{
+  padding:13px;
+  border:1px solid #d1d5db;
+  border-radius:8px;
+  font-size:14px;
+  outline:none;
+}
+
+input:focus{
+  border:1px solid #d89a00;
+}
+
+small{
+  margin-top:6px;
+  color:#dc2626;
+}
+
+button{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:8px;
+  background:#d89a00;
+  color:white;
+  font-size:15px;
+  cursor:pointer;
+}
+
+body.dark-mode .transaction-container{
+  background:#111827;
+}
+
+body.dark-mode .card{
+  background:#1f2937;
+  border:1px solid #374151;
+}
+
+body.dark-mode h2,
+body.dark-mode label{
+  color:white;
+}
+
+body.dark-mode input{
+  background:#374151;
+  color:white;
+  border:1px solid #4b5563;
+}
+
+@media (min-width:481px) and (max-width:768px){
+
+  .card{
+    padding:25px;
+  }
+
+}
+
+@media (max-width:480px){
+
+  .transaction-container{
+    padding:20px 15px;
+  }
+
+  .card{
+    padding:20px;
+  }
+
+}

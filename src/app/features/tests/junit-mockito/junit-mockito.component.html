@@ -1,0 +1,34 @@
+<div class="tests-container">
+
+  <div class="header">
+
+    <h1>
+      Tests JUnit y Mockito
+    </h1>
+
+    <p>
+      Validación de funcionalidades críticas del sistema.
+    </p>
+
+  </div>
+
+  <div class="tests-grid">
+
+    <div
+      class="test-card"
+      *ngFor="let test of tests"
+    >
+
+      <h3>
+        {{test.name}}
+      </h3>
+
+      <span>
+        {{test.status}}
+      </span>
+
+    </div>
+
+  </div>
+
+</div>

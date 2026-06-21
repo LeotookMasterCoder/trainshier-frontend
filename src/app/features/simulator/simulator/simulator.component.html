@@ -1,0 +1,328 @@
+<div class="simulator-page">
+
+  <!-- NOTIFICACIONES DE SUCESO O ERROR (TOASTS) -->
+  <div class="notification-toast-container">
+    <div class="success-message" *ngIf="successMessage">
+      ✅ {{ successMessage }}
+    </div>
+    <div class="error-message" *ngIf="errorMessage">
+      ❌ {{ errorMessage }}
+    </div>
+  </div>
+
+  <!-- ENCABEZADO PRINCIPAL -->
+  <div class="simulator-header">
+    <div>
+      <h1>TrainShier Simulator</h1>
+      <p>
+        Simulador inteligente de atención al cliente,
+        inventario, facturación y caja registradora.
+      </p>
+    </div>
+
+    <div class="header-badges">
+      <button class="stats-toggle-btn" (click)="toggleStats($event)">
+        📊 Ver Estadísticas
+      </button>
+
+      <span class="badge role">
+        {{ role }}
+      </span>
+
+      <span class="badge difficulty">
+        Dificultad: {{ difficulty }}
+      </span>
+    </div>
+  </div>
+
+  <!-- PANEL FLOTANTE / FIJO DEL CLIENTE ACTUAL -->
+  <div class="sticky-customer-panel">
+    <div class="card customer-card-horizontal">
+
+      <div class="customer-main-info">
+        <div class="customer-header-inline">
+          <h2>Cliente Simulado: <span class="customer-name-highlight">{{ currentCustomer.name }}</span></h2>
+          <span class="mood-badge">{{ currentCustomer.mood }}</span>
+        </div>
+
+        <div class="customer-details-row">
+          <div class="detail-item">
+            <strong>Artículos pedidos:</strong>
+            <p class="request-text">{{ currentCustomer.request }}</p>
+          </div>
+          <div class="detail-item">
+            <strong>Mensaje:</strong>
+            <p class="customer-message">"{{ currentCustomer.message }}"</p>
+          </div>
+        </div>
+
+        <div class="satisfaction-section">
+          <span class="patience-label">Paciencia: {{ currentCustomer.patience }} / 5</span>
+          <div class="emotion-bar">
+            <div class="emotion-fill" [style.width.%]="customerSatisfaction"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="customer-timer-zone">
+        <h3>Tiempo Restante</h3>
+        <div class="timer-display" [class.timer-low]="timeLeft < 20">
+          {{ timeLeft }}<span class="seconds-unit">s</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- GRID PRINCIPAL DEL SIMULADOR -->
+  <div class="simulator-grid">
+
+    <!-- PANEL PRINCIPAL (IZQUIERDO): OPERACIÓN DE CAJA -->
+    <div class="main-panel">
+
+      <!-- ENTRADA DE FACTURACIÓN (DOBLE PROPÓSITO: PISTOLA Y MANUAL) -->
+      <div class="card">
+        <h2>Registro de Productos (Facturación)</h2>
+        <div class="scan-section">
+          <input
+            type="text"
+            placeholder="Escanee con la pistola o digite el código..."
+            [(ngModel)]="productCode"
+            (keyup.enter)="registerByCode()"
+            [disabled]="!simulationStarted"
+            autofocus>
+          <button (click)="registerByCode()" [disabled]="!simulationStarted">Registrar Código</button>
+        </div>
+      </div>
+
+      <!-- TABLA DEL CARRITO DE COMPRAS CON INTERACCIÓN DE MODIFICACIÓN -->
+      <div class="card">
+        <h2>Venta Actual (Carrito)</h2>
+        <table>
+          <thead>
+          <tr>
+            <th>Código</th>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Subtotal</th>
+            <th style="text-align: center;">Quitar</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let item of cart">
+            <td>{{ item.code }}</td>
+            <td>{{ item.name }}</td>
+            <td>
+              <button (click)="decreaseQuantity(item)" style="padding: 2px 6px; margin-right: 5px;">-</button>
+              <strong>{{ item.quantity }}</strong>
+              <button (click)="increaseQuantity(item)" style="padding: 2px 6px; margin-left: 5px;">+</button>
+            </td>
+            <td>{{ item.price | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+            <td>{{ item.subtotal | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+            <td style="text-align: center;">
+              <button
+                (click)="removeItem(item)"
+                style="background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;"
+                title="Quitar del carrito">
+                🗑️
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="cart.length === 0">
+            <td colspan="6" class="no-results" style="text-align: center;">El carrito está vacío. Digite o escanee un producto para empezar.</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- VISUALIZADOR DE INVENTARIO -->
+      <div class="card">
+        <div class="inventory-header-row">
+          <h2>Inventario de Productos</h2>
+
+          <div class="search-container">
+            <input
+              type="text"
+              placeholder="🔍 Buscar producto por nombre o código..."
+              [(ngModel)]="searchQuery"
+            >
+          </div>
+        </div>
+
+        <table>
+          <thead>
+          <tr>
+            <th>Código</th>
+            <th>Código Barras</th>
+            <th>Producto</th>
+            <th>Stock</th>
+            <th>Precio</th>
+            <th *ngIf="role === 'INSTRUCTOR'">Acciones</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let product of filteredProducts">
+            <td>{{ product.code }}</td>
+            <td><small>{{ product.barcode || 'N/A' }}</small></td>
+            <td>{{ product.name }}</td>
+            <td>
+                <span [class.out-stock]="product.stock <= 0">
+                  {{ product.stock }}
+                </span>
+            </td>
+            <td>{{ product.price | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+            <td *ngIf="role === 'INSTRUCTOR'">
+              <button (click)="editProduct(product)">Editar</button>
+              <button (click)="deleteProduct(product)">Eliminar</button>
+            </td>
+          </tr>
+          <tr *ngIf="filteredProducts.length === 0">
+            <td colspan="6" class="no-results">No se encontraron productos coincidentes.</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <!-- PANEL LATERAL (DERECHO): LIQUIDACIÓN, HISTORIAL Y ACCIONES -->
+    <div class="side-panel">
+
+      <!-- MODAL/DROPDOWN DE ESTADÍSTICAS FLOTANTES -->
+      <div class="card stats-dropdown" *ngIf="showStats" #statsDropdown>
+        <h2>Estadísticas Generales</h2>
+        <div class="stat">
+          <span>Ventas</span>
+          <strong>{{ salesCount }}</strong>
+        </div>
+        <div class="stat">
+          <span>Clientes Total</span>
+          <strong>{{ totalClients }}</strong>
+        </div>
+        <div class="stat">
+          <span>Productos Servidos</span>
+          <strong>{{ servedProducts }}</strong>
+        </div>
+        <div class="stat">
+          <span>Puntaje</span>
+          <strong>{{ score }}</strong>
+        </div>
+      </div>
+
+      <!-- RESUMEN DE FACTURA -->
+      <div class="card" *ngIf="!h">
+        <h2>Liquidación</h2>
+        <div class="invoice-row">
+          <span>Subtotal</span>
+          <span>{{ subtotal | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+        <div class="invoice-row">
+          <span>IVA ({{ ivaPercentage }}%)</span>
+          <span>{{ ivaValue | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+        <div class="invoice-row" *ngIf="discountValue > 0">
+          <span>Descuento</span>
+          <span style="color: green;">-{{ discountValue | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+        <div class="invoice-row total">
+          <span>Total</span>
+          <span>{{ totalToPay | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+        <button
+          class="success-btn"
+          style="width: 100%; margin-top: 15px;"
+          (click)="cambiar()"
+          [disabled]="!simulationStarted"
+          [ngStyle]="{ 'color': simulationStarted ? 'white' : 'gris' }"
+          [ngStyle]="{ 'background': simulationStarted ? 'white' : 'gris' }"
+        >
+          Pagar Ahora
+        </button>
+      </div>
+
+      <!-- CAJA REGISTRADORA Y PASARELA DE DINERO -->
+      <div class="card" *ngIf="h">
+        <h2>Caja y Pago</h2>
+        <div class="invoice-row total">
+          <span>Total</span>
+          <span>{{ totalToPay | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+        <select [(ngModel)]="paymentMethod" (change)="calculatePayment()" [disabled]="!simulationStarted">
+          <option value="Efectivo">Efectivo</option>
+          <option value="Débito">Débito</option>
+          <option value="Crédito">Crédito</option>
+          <option value="Transferencia">Transferencia</option>
+          <option value="QR">QR</option>
+        </select>
+
+        <input
+          type="number"
+          [(ngModel)]="cashReceived"
+          (input)="calculatePayment()"
+          placeholder="Dinero recibido"
+          [disabled]="!simulationStarted || paymentMethod !== 'Efectivo'">
+
+        <div class="change-box" *ngIf="paymentMethod === 'Efectivo'">
+          Cambio: <strong>{{ change | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+        </div>
+
+        <!-- Botón Registrar Venta reubicado coherentemente aquí abajo -->
+        <button
+          class="success-btn"
+          style="width: 100%; margin-top: 15px;"
+          (click)="registerSale()"
+          (click)="cambiar()">
+          Registrar Venta
+        </button>
+      </div>
+
+      <!-- CALENDARIO COMERCIAL -->
+      <div class="card">
+        <h2>Calendario Comercial</h2>
+        <input type="date" [(ngModel)]="saleDate" (change)="updateSpecialDay()" [disabled]="simulationStarted">
+        <div class="promotion-card">
+          <h3>{{ specialEvent }}</h3>
+          <p>Descuento disponible: {{ specialDiscount }}%</p>
+        </div>
+      </div>
+
+      <!-- SECCIÓN EXCLUSIVA DE GESTIÓN PARA EL INSTRUCTOR -->
+      <div class="card" *ngIf="role === 'INSTRUCTOR'">
+        <h2>Gestión de Productos</h2>
+        <div class="form-grid">
+          <input type="text" placeholder="Nombre" [(ngModel)]="newProduct.name">
+          <input type="text" placeholder="Código" [(ngModel)]="newProduct.code">
+          <input type="number" placeholder="Precio" [(ngModel)]="newProduct.price">
+          <input type="number" placeholder="Stock" [(ngModel)]="newProduct.stock">
+          <input type="text" placeholder="Código de barras" [(ngModel)]="newProduct.barcode">
+        </div>
+        <button class="primary-btn" (click)="addProduct()">Agregar Producto</button>
+      </div>
+
+      <!-- HISTORIAL DE TICKETS GENERADOS -->
+      <div class="card">
+        <h2>Historial de Ventas</h2>
+        <div class="history-container">
+          <div *ngFor="let sale of salesHistory" class="history-item">
+            <strong>{{ sale.product }}</strong>
+            <span>x{{ sale.quantity }}</span>
+            <p>{{ sale.total | currency:'COP':'symbol-narrow':'1.0-0' }}</p>
+          </div>
+          <div *ngIf="salesHistory.length === 0" class="no-results" style="font-size: 0.85rem; padding: 10px 0;">
+            No hay ventas registradas en el historial.
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTROLES GLOBALES DE LA COMPRA -->
+      <div class="actions vertical-actions">
+        <button class="primary-btn" *ngIf="!simulationStarted" (click)="startSimulation()">Iniciar Simulación</button>
+        <button class="danger-btn" *ngIf="simulationStarted" (click)="finishSimulation()">Finalizar</button>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

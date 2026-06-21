@@ -1,0 +1,72 @@
+<div class="transaction-container">
+
+  <div class="card">
+
+    <h2>
+      Registrar Venta
+    </h2>
+
+    <form
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+    >
+
+      <div class="input-group">
+
+        <label>
+          Producto
+        </label>
+
+        <input
+          type="text"
+          formControlName="product"
+          placeholder="Ejemplo: Leche"
+        >
+
+        <small
+          *ngIf="
+            form.get('product')?.invalid &&
+            form.get('product')?.touched
+          "
+        >
+          El producto es obligatorio
+        </small>
+
+      </div>
+
+      <div class="input-group">
+
+        <label>
+          Cantidad
+        </label>
+
+        <input
+          type="number"
+          formControlName="quantity"
+        >
+
+      </div>
+
+      <div class="input-group">
+
+        <label>
+          Precio
+        </label>
+
+        <input
+          type="number"
+          formControlName="price"
+          placeholder="0"
+        >
+
+      </div>
+
+      <button type="submit">
+        Guardar Venta
+      </button>
+
+    </form>
+
+  </div>
+
+</div>

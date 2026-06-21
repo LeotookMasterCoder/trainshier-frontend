@@ -1,0 +1,187 @@
+<div class="statistics-container">
+
+  <div class="header">
+
+    <h1>
+      Estadísticas Generales
+    </h1>
+
+    <p>
+      Indicadores de desempeño y actividad dentro de TrainShier.
+    </p>
+
+  </div>
+
+  <div class="statistics-grid">
+
+    <div class="stat-card">
+
+      <div class="icon">
+        👥
+      </div>
+
+      <h2>{{ totalUsers }}</h2>
+
+      <span>
+        Usuarios Registrados
+      </span>
+
+    </div>
+
+    <div class="stat-card">
+
+      <div class="icon">
+        🛒
+      </div>
+
+      <h2>{{ totalTransactions }}</h2>
+
+      <span>
+        Transacciones Realizadas
+      </span>
+
+    </div>
+
+    <div class="stat-card">
+
+      <div class="icon">
+        🎯
+      </div>
+
+      <h2>{{ totalSimulations }}</h2>
+
+      <span>
+        Simulaciones Completadas
+      </span>
+
+    </div>
+
+    <div class="stat-card">
+
+      <div class="icon">
+        📈
+      </div>
+
+      <h2>{{ successRate }}%</h2>
+
+      <span>
+        Tasa de Éxito
+      </span>
+
+    </div>
+
+  </div>
+
+  <div class="details-section">
+
+    <div class="detail-card">
+
+      <h3>
+        Resumen General
+      </h3>
+
+      <ul>
+
+        <li>
+          Clientes atendidos:
+          <strong>{{ totalCustomers }}</strong>
+        </li>
+
+        <li>
+          Productos vendidos:
+          <strong>{{ productsSold }}</strong>
+        </li>
+
+        <li>
+          Instructores activos:
+          <strong>{{ instructors }}</strong>
+        </li>
+
+        <li>
+          Aprendices registrados:
+          <strong>{{ apprentices }}</strong>
+        </li>
+
+      </ul>
+
+    </div>
+
+    <div class="detail-card">
+
+      <h3>
+        Rendimiento
+      </h3>
+
+      <ul>
+
+        <li>
+          Mejor puntaje:
+          <strong>{{ bestScore }}%</strong>
+        </li>
+
+        <li>
+          Promedio general:
+          <strong>{{ averageScore }}%</strong>
+        </li>
+
+        <li>
+          Errores registrados:
+          <strong>{{ totalErrors }}</strong>
+        </li>
+
+        <li>
+          Simulaciones activas:
+          <strong>{{ activeSimulations }}</strong>
+        </li>
+
+      </ul>
+
+    </div>
+
+  </div>
+
+  <div class="ranking-section">
+
+    <h2>
+      Ranking de Aprendices
+    </h2>
+
+    <table>
+
+      <thead>
+
+      <tr>
+
+        <th>#</th>
+        <th>Aprendiz</th>
+        <th>Rol</th>
+        <th>Efectividad</th>
+        <th>Simulaciones</th>
+
+      </tr>
+
+      </thead>
+
+      <tbody>
+
+      <tr *ngFor="let user of ranking; let i=index">
+
+        <td>{{i+1}}</td>
+
+        <td>{{user.name}}</td>
+
+        <td>{{user.role}}</td>
+
+        <td>{{user.effectiveness}}%</td>
+
+        <td>{{user.simulations}}</td>
+
+      </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>

@@ -1,0 +1,410 @@
+<div class="reports-container">
+
+  <div class="header">
+
+    <div>
+
+      <h1>
+        Centro de Reportes
+      </h1>
+
+      <p>
+        Analiza el rendimiento general de TrainShier
+      </p>
+
+    </div>
+
+    <button class="export-btn">
+      Exportar PDF
+    </button>
+
+  </div>
+
+  <div class="kpi-grid">
+
+    <div class="kpi-card">
+
+      <h2>
+        {{ totalUsers }}
+      </h2>
+
+      <span>
+        Usuarios Registrados
+      </span>
+
+    </div>
+
+    <div class="kpi-card">
+
+      <h2>
+        {{ totalTransactions }}
+      </h2>
+
+      <span>
+        Transacciones
+      </span>
+
+    </div>
+
+    <div class="kpi-card">
+
+      <h2>
+        {{ totalSimulations }}
+      </h2>
+
+      <span>
+        Simulaciones
+      </span>
+
+    </div>
+
+    <div class="kpi-card">
+
+      <h2>
+        {{ averageScore }}%
+      </h2>
+
+      <span>
+        Efectividad General
+      </span>
+
+    </div>
+
+    <div class="kpi-card">
+
+      <h2>
+        98
+      </h2>
+
+      <span>
+        Clientes Atendidos
+      </span>
+
+    </div>
+
+    <div class="kpi-card">
+
+      <h2>
+        15
+      </h2>
+
+      <span>
+        Productos Activos
+      </span>
+
+    </div>
+
+    <div class="kpi-card">
+
+      <h2>
+        7
+      </h2>
+
+      <span>
+        Instructores
+      </span>
+
+    </div>
+
+    <div class="kpi-card">
+
+      <h2>
+        1.8 min
+      </h2>
+
+      <span>
+        Tiempo Promedio
+      </span>
+
+    </div>
+
+  </div>
+
+  <div class="filters-card">
+
+    <h2>
+      Filtros
+    </h2>
+
+    <div class="filters-grid">
+
+      <div>
+
+        <label>
+          Fecha Inicial
+        </label>
+
+        <input
+          type="date"
+          [(ngModel)]="startDate"
+        >
+
+      </div>
+
+      <div>
+
+        <label>
+          Fecha Final
+        </label>
+
+        <input
+          type="date"
+          [(ngModel)]="endDate"
+        >
+
+      </div>
+
+      <div>
+
+        <label>
+          Rol
+        </label>
+
+        <select
+          [(ngModel)]="selectedRole"
+        >
+
+          <option value="TODOS">
+            Todos
+          </option>
+
+          <option value="APRENDIZ">
+            Aprendiz
+          </option>
+
+          <option value="INSTRUCTOR">
+            Instructor
+          </option>
+
+          <option value="ADMIN">
+            Administrador
+          </option>
+
+        </select>
+
+      </div>
+
+      <button
+        class="filter-btn"
+        (click)="applyFilters()"
+      >
+        Filtrar Información
+      </button>
+
+    </div>
+
+  </div>
+
+  <div class="charts-grid">
+
+    <div class="chart-card">
+
+      <h2>
+        Simulaciones por Mes
+      </h2>
+
+      <div class="chart-placeholder">
+
+        Gráfico Chart.js
+
+      </div>
+
+    </div>
+
+    <div class="chart-card">
+
+      <h2>
+        Rendimiento General
+      </h2>
+
+      <div class="chart-placeholder">
+
+        Gráfico Chart.js
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="analytics-grid">
+
+    <div class="ranking-card">
+
+      <h2>
+        Top Aprendices
+      </h2>
+
+      <div
+        class="ranking-item"
+        *ngFor="let user of topUsers"
+      >
+
+        <span>
+          {{ user.name }}
+        </span>
+
+        <strong>
+          {{ user.effectiveness }}%
+        </strong>
+
+      </div>
+
+    </div>
+
+    <div class="ranking-card">
+
+      <h2>
+        Productos Más Vendidos
+      </h2>
+
+      <div
+        class="ranking-item"
+        *ngFor="let product of topProducts"
+      >
+
+        <span>
+          {{ product.name }}
+        </span>
+
+        <strong>
+          {{ product.sales }}
+        </strong>
+
+      </div>
+
+    </div>
+
+  </div>
+  <div class="ranking-card">
+
+    <h2>
+      Errores Más Frecuentes
+    </h2>
+
+    <div class="ranking-item">
+
+      <span>
+        Cambio incorrecto
+      </span>
+
+      <strong>
+        42
+      </strong>
+
+    </div>
+
+    <div class="ranking-item">
+
+      <span>
+        Producto equivocado
+      </span>
+
+      <strong>
+        30
+      </strong>
+
+    </div>
+
+    <div class="ranking-item">
+
+      <span>
+        Precio incorrecto
+      </span>
+
+      <strong>
+        19
+      </strong>
+
+    </div>
+
+    <div class="ranking-item">
+
+      <span>
+        Descuento mal aplicado
+      </span>
+
+      <strong>
+        11
+      </strong>
+
+    </div>
+
+  </div>
+
+  <div class="table-section">
+
+    <div class="table-header">
+
+      <h2>
+        Actividad Reciente
+      </h2>
+
+      <button class="export-btn">
+        Exportar Excel
+      </button>
+
+    </div>
+
+    <div class="table-container">
+
+      <table>
+
+        <thead>
+
+        <tr>
+
+          <th>Usuario</th>
+          <th>Rol</th>
+          <th>Simulaciones</th>
+          <th>Efectividad</th>
+
+        </tr>
+
+        </thead>
+
+        <tbody>
+
+        <tr *ngFor="let user of users">
+
+          <td>
+            {{ user.name }}
+          </td>
+
+          <td>
+            {{ user.role }}
+          </td>
+
+          <td>
+            {{ user.simulations }}
+          </td>
+
+          <td>
+            {{ user.effectiveness }}%
+          </td>
+
+        </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </div>
+
+  <div class="ai-card">
+
+    <h2>
+       Análisis Inteligente
+    </h2>
+
+    <p>
+
+      {{ aiReport }}
+
+    </p>
+
+  </div>
+
+</div>

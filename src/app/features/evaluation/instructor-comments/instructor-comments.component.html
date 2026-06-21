@@ -1,0 +1,306 @@
+<div class="instructor-page">
+  <div class="header-card">
+
+    <div>
+
+      <h1>
+        Centro de Evaluación
+      </h1>
+
+      <p>
+        Analiza el desempeño de los aprendices y genera retroalimentación profesional.
+      </p>
+
+    </div>
+
+    <button class="export-btn">
+      Exportar Evaluación
+    </button>
+
+  </div>
+
+  <div class="kpi-grid">
+
+    <div class="kpi-card">
+
+      <h2>{{ puntaje }}%</h2>
+
+      <span>
+        Rendimiento
+      </span>
+
+    </div>
+
+    <div class="kpi-card">
+
+      <h2>{{ tiempo }}</h2>
+
+      <span>
+        Minutos
+      </span>
+
+    </div>
+
+    <div class="kpi-card">
+
+      <h2>{{ errores }}</h2>
+
+      <span>
+        Errores
+      </span>
+
+    </div>
+
+    <div class="kpi-card">
+
+      <h2>{{ comments.length }}</h2>
+
+      <span>
+        Evaluaciones
+      </span>
+
+    </div>
+
+  </div>
+
+  <div class="student-card">
+
+    <div>
+
+      <div class="student-info">
+
+        <h2>
+          {{ nombreAprendiz }}
+        </h2>
+
+        <span
+          [class.approved]="puntaje >= 70"
+          [class.rejected]="puntaje < 70">
+
+          {{ puntaje >= 70 ? 'APROBADO' : 'NO APROBADO' }}
+
+        </span>
+
+      </div>
+
+      <div class="progress-section">
+
+        <div class="progress-header">
+
+          <span>
+            Desempeño General
+          </span>
+
+          <strong>
+            {{ puntaje }}%
+          </strong>
+
+        </div>
+
+        <div class="progress-bar">
+
+          <div
+            class="progress-fill"
+            [style.width.%]="puntaje">
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="metrics">
+
+        <div class="metric">
+
+          <h3>Puntaje</h3>
+
+          <p>{{ puntaje }}%</p>
+
+        </div>
+
+        <div class="metric">
+
+          <h3>Tiempo</h3>
+
+          <p>{{ tiempo }} min</p>
+
+        </div>
+
+        <div class="metric">
+
+          <h3>Errores</h3>
+
+          <p>{{ errores }}</p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="chart-box">
+
+      <div class="chart-circle">
+
+        <div class="inner-circle">
+
+          {{ puntaje }}%
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="ai-card">
+
+    <h2>
+      Análisis Inteligente
+    </h2>
+
+    <p>
+
+      {{ aiAnalysis }}
+
+    </p>
+
+  </div>
+
+  <div class="comments-container">
+
+    <h2>
+      Nueva Retroalimentación
+    </h2>
+
+    <form (ngSubmit)="saveComment()">
+
+      <input
+        type="text"
+        placeholder="Nombre del aprendiz"
+        [(ngModel)]="comment.studentName"
+        name="studentName">
+
+      <input
+        type="text"
+        placeholder="Módulo evaluado"
+        [(ngModel)]="comment.module"
+        name="module">
+
+      <input
+        type="number"
+        placeholder="Calificación final"
+        [(ngModel)]="comment.score"
+        name="score">
+
+      <select
+        [(ngModel)]="comment.state"
+        name="state">
+
+        <option value="">
+          Estado
+        </option>
+
+        <option value="Aprobado">
+          Aprobado
+        </option>
+
+        <option value="No aprobado">
+          No aprobado
+        </option>
+
+      </select>
+
+      <textarea
+        rows="4"
+        placeholder="Retroalimentación"
+        [(ngModel)]="comment.feedback"
+        name="feedback">
+      </textarea>
+
+      <textarea
+        rows="4"
+        placeholder="Errores detectados"
+        [(ngModel)]="comment.errors"
+        name="errors">
+      </textarea>
+
+      <button type="submit">
+
+        Guardar Evaluación
+
+      </button>
+
+    </form>
+
+    <div
+      class="notification"
+      *ngIf="notification">
+
+      {{ notification }}
+
+    </div>
+
+  </div>
+
+  <div class="history-card">
+
+    <div class="history-header">
+
+      <h2>
+        Historial de Evaluaciones
+      </h2>
+
+      <input
+        type="text"
+        placeholder="Buscar aprendiz..."
+      >
+
+    </div>
+
+    <div class="comments-list">
+
+      <div
+        class="comment-card"
+        *ngFor="let item of comments">
+
+        <div class="card-top">
+
+          <h2>
+            {{ item.studentName }}
+          </h2>
+
+          <span>
+            {{ item.state }}
+          </span>
+
+        </div>
+
+        <p>
+          <strong>Módulo:</strong>
+          {{ item.module }}
+        </p>
+
+        <p>
+          <strong>Calificación:</strong>
+          {{ item.score }}
+        </p>
+
+        <p>
+          <strong>Retroalimentación:</strong>
+          {{ item.feedback }}
+        </p>
+
+        <p>
+          <strong>Errores:</strong>
+          {{ item.errors }}
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
