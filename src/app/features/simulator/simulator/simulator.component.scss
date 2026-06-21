@@ -256,9 +256,7 @@
   }
 }
 
-/* ==========================
-   GRID PRINCIPAL
-
+/* ========================== GRID PRINCIPAL ========================== */
 .simulator-grid {
   display: grid;
   grid-template-columns: 1fr 340px;
@@ -276,9 +274,7 @@
   }
 }
 
-/* ==========================
-   CARD BASE
-
+/* ========================== CARD BASE ========================== */
 .card {
   background: var(--bg-card);
   border-radius: 20px;

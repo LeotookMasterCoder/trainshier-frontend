@@ -7,12 +7,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="./assets/img/trainshier-logo.png">
   <script>
+    const SW_VERSION = 'v3';
+    const lastVersion = localStorage.getItem('sw_version');
+    
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('Service Worker registrado con éxito', reg))
-          .catch(err => console.error('Error al registrar Service Worker', err));
-      });
+      if (lastVersion !== SW_VERSION) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+          let promises = [];
+          for (let registration of registrations) {
+            promises.push(registration.unregister());
+          }
+          Promise.all(promises).then(() => {
+            localStorage.setItem('sw_version', SW_VERSION);
+            console.log('Cache del Service Worker limpiada. Recargando...');
+            window.location.reload();
+          });
+        });
+      } else {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Service Worker registrado con éxito', reg))
+            .catch(err => console.error('Error al registrar Service Worker', err));
+        });
+      }
     }
   </script>
 </head>
