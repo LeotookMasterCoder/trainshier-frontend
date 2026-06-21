@@ -870,6 +870,13 @@ export class SimulatorComponent implements OnInit {
     this.h = !this.h;
   }
 
+  scrollToConfig(): void {
+    const configCard = document.querySelector('.scenario-settings-card');
+    if (configCard) {
+      configCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
   /* =========================================
       SCENARIO SELECTOR, WEB CAMERA SCANNER, AND AI CHAT CUSTOMER METHODS
   ========================================= */

@@ -42,6 +42,8 @@ import { InstructorCommentsComponent } from './features/evaluation/instructor-co
 import { ReportsComponent }     from './features/reports/report-list/report-list.component';
 
 import { StatisticsComponent }  from './features/statistics/statistics/statistics.component';
+import { CoreModule } from './core/core.module';
+
 @NgModule({
 
   declarations:[
@@ -87,7 +89,9 @@ import { StatisticsComponent }  from './features/statistics/statistics/statistic
 
     FormsModule,
 
-    ReactiveFormsModule
+    ReactiveFormsModule,
+
+    CoreModule
 
   ],
 

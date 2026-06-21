@@ -21,8 +21,15 @@
     </div>
 
     <div class="header-badges">
-      <button class="stats-toggle-btn" (click)="toggleStats($event)">
-        📊 Ver Estadísticas
+      <button class="stats-toggle-btn" (click)="showStats = !showStats">
+        📊 {{ showStats ? 'Ocultar Estadísticas' : 'Ver Estadísticas' }}
+      </button>
+      <button 
+        *ngIf="!simulationStarted"
+        class="warning-btn go-to-config-btn"
+        (click)="scrollToConfig()"
+        style="background: var(--accent); color: var(--accent-ink); border: 1.5px solid var(--accent); font-weight: 700; padding: 10px 16px; border-radius: 999px; cursor: pointer; transition: all 0.2s ease;">
+        ⚙️ Configurar e Iniciar
       </button>
 
       <span class="badge role">
