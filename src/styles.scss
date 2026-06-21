@@ -1,0 +1,239 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+/* ============================ TOKENS ============================ */
+:root {
+  /* Typography */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-ui: 'Inter', -apple-system, system-ui, sans-serif;
+  --font-outfit: 'Outfit', sans-serif;
+
+  /* Brand gold accents */
+  --gold:        #D4A017;
+  --gold-soft:   #E3B53A;
+  --gold-deep:   #B8860B;
+
+  /* Radii & Shadows */
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 22px;
+  --shadow: 0 18px 50px -22px rgba(0,0,0,.55);
+  --shadow-sm: 0 6px 20px -12px rgba(0,0,0,.4);
+  --ring: 0 0 0 3px color-mix(in srgb, var(--gold) 38%, transparent);
+
+  --maxw: 1180px;
+  --transition: .22s cubic-bezier(.4,0,.2,1);
+}
+
+/* ---- LIGHT THEME (Default) ---- */
+:root, [data-theme="light"] {
+  --bg:          #F7F4EE;
+  --bg-grad:     radial-gradient(120% 120% at 50% -10%, #ffffff 0%, #f1ece1 60%);
+  --surface:     #FFFFFF;
+  --surface-2:   #FBF8F1;
+  --panel:       #FFFFFF;
+  --border:      rgba(184,134,11,.22);
+  --border-soft: rgba(26,23,18,.08);
+  --text:        #1A1712;
+  --text-soft:   #6B6456;
+  --text-mute:   #9A917F;
+  --accent:      var(--gold-deep);
+  --accent-ink:  #FFFFFF;
+  --btn2-bg:     #1A1712;
+  --btn2-ink:    #F7F4EE;
+  --hero-grad:   linear-gradient(135deg, #E0A91C 0%, #EBBE3A 55%, #D89E14 100%);
+  --hero-ink:    #3a2c05;
+  --hero-cta-bg: #171A21;
+  --hero-cta-ink:#FFFFFF;
+  --icon-bg:     #FBF1D8;
+}
+
+/* ---- DARK THEME ---- */
+[data-theme="dark"], body.dark-mode {
+  --bg:          #161310;
+  --bg-grad:     radial-gradient(120% 120% at 50% -10%, #211c16 0%, #161310 55%);
+  --surface:     #211C16;
+  --surface-2:   #2A241C;
+  --panel:       #1B1712;
+  --border:      rgba(212,160,23,.16);
+  --border-soft: rgba(245,241,232,.10);
+  --text:        #F5F1E8;
+  --text-soft:   #A89F8C;
+  --text-mute:   #6F685A;
+  --accent:      var(--gold);
+  --accent-ink:  #161310;
+  --btn2-bg:     #F5F1E8;
+  --btn2-ink:    #1A1712;
+  --hero-grad:   linear-gradient(135deg, #C9971A 0%, #E0AE2B 55%, #C28E15 100%);
+  --hero-ink:    #231a07;
+  --hero-cta-bg: #1B1712;
+  --hero-cta-ink:#F5F1E8;
+  --icon-bg:     color-mix(in srgb, var(--gold) 16%, var(--surface));
+}
+
+/* ============================ BASE ============================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100vh;
+  scroll-behavior: smooth;
+  font-family: var(--font-ui);
+  background: var(--bg);
+  background-image: var(--bg-grad);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+/* ============================ REUSABLE COMPONENTS ============================ */
+
+/* Corner decorations - Logotype style */
+.corner {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  pointer-events: none;
+  opacity: .9;
+}
+.corner::before, .corner::after {
+  content: "";
+  position: absolute;
+  background: var(--accent);
+}
+.corner::before { width: 100%; height: 2.5px; }
+.corner::after  { width: 2.5px; height: 100%; }
+.corner.tl { top: -1px; left: -1px; }     .corner.tl::before { top:0; left:0 }    .corner.tl::after { top:0; left:0 }
+.corner.tr { top: -1px; right: -1px; }    .corner.tr::before { top:0; right:0 }   .corner.tr::after { top:0; right:0 }
+.corner.bl { bottom: -1px; left: -1px; }  .corner.bl::before { bottom:0; left:0 }  .corner.bl::after { bottom:0; left:0 }
+.corner.br { bottom: -1px; right: -1px; } .corner.br::before { bottom:0; right:0 } .corner.br::after { bottom:0; right:0 }
+
+/* Logo TS */
+.logo-badge-ts {
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 24px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--surface-2);
+  border: 1.5px solid var(--accent);
+  box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.logo-badge-ts span {
+  font: 700 30px/1 var(--font-display);
+  letter-spacing: 1px;
+  color: var(--accent);
+}
+
+/* Alert Reusable */
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  text-align: left;
+  border-radius: var(--r-md);
+  padding: 13px 16px;
+  font-size: 14px;
+  line-height: 1.45;
+  background: color-mix(in srgb, var(--gold) 10%, var(--surface));
+  border: 1px solid var(--border);
+  color: var(--text);
+  transition: var(--transition);
+}
+.alert svg {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+  color: var(--accent);
+  margin-top: 1px;
+}
+
+/* Forms & Controls */
+input, textarea, select {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: var(--font-ui);
+  font-size: 14.5px;
+  transition: var(--transition);
+}
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--ring);
+}
+input::placeholder {
+  color: var(--text-mute);
+}
+
+input[readonly], input:disabled, select:disabled {
+  background: color-mix(in srgb, var(--text-mute) 10%, var(--surface)) !important;
+  opacity: 0.7;
+  border-color: var(--border-soft) !important;
+  color: var(--text-soft) !important;
+  cursor: not-allowed;
+}
+
+label {
+  font-weight: 500;
+  color: var(--text);
+}
+
+/* Cards integration */
+.card, .feature-card, .simulation-card, .profile-card, .auth-card, .info-card, .func {
+  background: var(--surface) !important;
+  color: var(--text);
+  border: 1px solid var(--border-soft) !important;
+  box-shadow: var(--shadow);
+  border-radius: var(--r-md);
+  transition: var(--transition);
+}
+.card:hover, .feature-card:hover, .info-card:hover, .func:hover {
+  border-color: var(--border) !important;
+}
+
+/* Headings color mapping */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text);
+}
+p, span, li {
+  color: var(--text-soft);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: var(--transition);
+}
+a:hover {
+  color: var(--gold-soft);
+  text-decoration: underline;
+}
+
+/* Standard Buttons mapping */
+.btn, button {
+  font-family: var(--font-ui);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-soft);
+}
