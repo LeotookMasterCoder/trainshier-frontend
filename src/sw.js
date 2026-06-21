@@ -1,18 +1,13 @@
-const CACHE_NAME = 'trainshier-cache-v1';
-const ASSETS = [
+const CACHE_NAME = 'trainshier-cache-v2';
+const PRECACHE_ASSETS = [
   '/',
-  '/index.html',
-  '/styles-G3LCCREM.css', // Matches current generated output style name or gets handled by fallback
-  '/main-J3VNZ7AU.js',
-  '/polyfills-FFHMD2TL.js'
+  '/index.html'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      // Ignore failures on individual files (since filenames can change on build hash)
-      return cache.addAll(ASSETS.map(url => new Request(url, { cache: 'reload' })))
-        .catch(err => console.log('Some assets could not be pre-cached, fallback will handle them', err));
+      return cache.addAll(PRECACHE_ASSETS);
     }).then(() => self.skipWaiting())
   );
 });
@@ -37,26 +32,51 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
+  const url = new URL(event.request.url);
 
-      return fetch(event.request).then(response => {
-        if (response && response.status === 200) {
-          const responseCopy = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseCopy);
+  // Network-First strategy for navigation requests and main paths
+  const isNavigation = event.request.mode === 'navigate' || url.pathname === '/' || url.pathname === '/index.html';
+
+  if (isNavigation) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          if (response && response.status === 200) {
+            const responseCopy = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseCopy);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          return caches.match('/index.html') || caches.match('/');
+        })
+    );
+  } else {
+    // Cache-First strategy for static assets (JS, CSS, images, fonts)
+    const isStaticAsset = /\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|otf|json)$/.test(url.pathname);
+
+    if (isStaticAsset) {
+      event.respondWith(
+        caches.match(event.request).then(cachedResponse => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+
+          return fetch(event.request).then(response => {
+            if (response && response.status === 200) {
+              const responseCopy = response.clone();
+              caches.open(CACHE_NAME).then(cache => {
+                cache.put(event.request, responseCopy);
+              });
+            }
+            return response;
+          }).catch(() => {
+            return new Response('Asset not found offline', { status: 404, statusText: 'Offline' });
           });
-        }
-        return response;
-      }).catch(() => {
-        // Fallback for page navigation in single page application (SPA)
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
-      });
-    })
-  );
+        })
+      );
+    }
+  }
 });
