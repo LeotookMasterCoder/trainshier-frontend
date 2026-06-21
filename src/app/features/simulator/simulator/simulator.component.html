@@ -36,7 +36,7 @@
   </div>
 
   <!-- PANEL FLOTANTE / FIJO DEL CLIENTE ACTUAL -->
-  <div class="sticky-customer-panel">
+  <div class="sticky-customer-panel" *ngIf="simulationStarted">
     <div class="card customer-card-horizontal">
 
       <div class="customer-main-info">
@@ -265,8 +265,6 @@
           style="width: 100%; margin-top: 15px;"
           (click)="cambiar()"
           [disabled]="!simulationStarted"
-          [ngStyle]="{ 'color': simulationStarted ? 'white' : 'gris' }"
-          [ngStyle]="{ 'background': simulationStarted ? 'white' : 'gris' }"
         >
           Pagar Ahora
         </button>
