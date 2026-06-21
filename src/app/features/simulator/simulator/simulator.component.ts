@@ -393,6 +393,23 @@ export class SimulatorComponent implements OnInit {
   /* =========================================
       CRUD PRODUCTOS (DATABASE CONNECTED)
   ========================================= */
+  autofillProduct(): void {
+    const products = [
+      { name: 'Aceite de Oliva 500ml', code: '7701002001', barcode: '7701002001', price: 18000, stock: 25 },
+      { name: 'Café Molido 500g', code: '7701002002', barcode: '7701002002', price: 9500, stock: 30 },
+      { name: 'Sal Refinada 1kg', code: '7701002003', barcode: '7701002003', price: 1800, stock: 40 },
+      { name: 'Detergente Líquido 1L', code: '7701002004', barcode: '7701002004', price: 12500, stock: 15 }
+    ];
+    const randomProd = products[Math.floor(Math.random() * products.length)];
+    this.newProduct = {
+      name: randomProd.name,
+      code: randomProd.code,
+      barcode: randomProd.barcode,
+      price: randomProd.price,
+      stock: randomProd.stock
+    };
+  }
+
   addProduct(): void {
     if (!this.newProduct.name || !this.newProduct.code) {
       return;
@@ -766,6 +783,19 @@ export class SimulatorComponent implements OnInit {
   ========================================= */
   finishSimulation(): void {
     clearInterval(this.timer);
+
+    // Push notification for the Instructor role
+    const savedNotifs = localStorage.getItem('trainshier_notifications');
+    let notifs = savedNotifs ? JSON.parse(savedNotifs) : [];
+    notifs.push({
+      id: String(Date.now()),
+      role: 'INSTRUCTOR',
+      message: `🚀 El aprendiz ${localStorage.getItem('name') || 'Usuario'} completó el examen y subió sus resultados (Puntaje: ${this.score}, Satisfacción: ${Math.round(this.customerSatisfaction)}%).`,
+      actionText: 'Evaluar',
+      route: '/evaluation',
+      read: false
+    });
+    localStorage.setItem('trainshier_notifications', JSON.stringify(notifs));
 
     this.savedSimulationReport = {
       finalScore: this.score,

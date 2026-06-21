@@ -21,6 +21,11 @@ export class ProfileComponent{
 
   userId:string='TRN-0000';
 
+  isLoggedIn: boolean = false;
+  solicitudRol: string = 'instructor';
+  reporteError: string = '';
+  supportSuccessMessage: string = '';
+
   form=this.fb.group({
 
     email:[
@@ -48,6 +53,15 @@ export class ProfileComponent{
   constructor(
     private fb:FormBuilder
   ){
+
+    this.isLoggedIn = !!localStorage.getItem('token');
+    
+    if (!this.isLoggedIn) {
+      this.role = 'OBSERVADOR';
+      this.name = 'Invitado Observador';
+      this.userId = 'INV-0000';
+      return;
+    }
 
     this.role=
       localStorage.getItem('role')
@@ -141,6 +155,40 @@ export class ProfileComponent{
 
     },3000);
 
+  }
+
+  requestRoleChange(): void {
+    const savedNotifs = localStorage.getItem('trainshier_notifications');
+    let notifs = savedNotifs ? JSON.parse(savedNotifs) : [];
+    notifs.push({
+      id: String(Date.now()),
+      role: 'ADMIN',
+      message: `👤 Solicitud de Rol: El usuario "${this.name}" solicita cambiar su rol a "${this.solicitudRol.toUpperCase()}".`,
+      actionText: 'Ver Solicitudes',
+      route: '/statistics',
+      read: false
+    });
+    localStorage.setItem('trainshier_notifications', JSON.stringify(notifs));
+    this.supportSuccessMessage = 'Solicitud de cambio de rol enviada al administrador.';
+    setTimeout(() => this.supportSuccessMessage = '', 3000);
+  }
+
+  reportSystemError(): void {
+    if (!this.reporteError || !this.reporteError.trim()) return;
+    const savedNotifs = localStorage.getItem('trainshier_notifications');
+    let notifs = savedNotifs ? JSON.parse(savedNotifs) : [];
+    notifs.push({
+      id: String(Date.now()),
+      role: 'ADMIN',
+      message: `⚠️ Reporte de Error: "${this.reporteError.trim()}" (enviado por "${this.name}").`,
+      actionText: 'Ver Reportes',
+      route: '/reports',
+      read: false
+    });
+    localStorage.setItem('trainshier_notifications', JSON.stringify(notifs));
+    this.reporteError = '';
+    this.supportSuccessMessage = 'Reporte de error enviado al administrador.';
+    setTimeout(() => this.supportSuccessMessage = '', 3000);
   }
 
 }

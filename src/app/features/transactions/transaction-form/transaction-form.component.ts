@@ -37,6 +37,25 @@ export class TransactionFormComponent{
 
   }
 
+  autofill(): void {
+    const products = ['Arroz Premium', 'Leche 1L', 'Pan Integral', 'Chocolate', 'Gaseosa Cola'];
+    const randomProduct = products[Math.floor(Math.random() * products.length)];
+    const randomQty = Math.floor(1 + Math.random() * 5);
+    const prices: { [key: string]: number } = {
+      'Arroz Premium': 8000,
+      'Leche 1L': 4500,
+      'Pan Integral': 5500,
+      'Chocolate': 3000,
+      'Gaseosa Cola': 6000
+    };
+    
+    this.form.patchValue({
+      product: randomProduct,
+      quantity: randomQty,
+      price: prices[randomProduct]
+    });
+  }
+
   submit():void{
 
     if(this.form.invalid){

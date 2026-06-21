@@ -100,6 +100,42 @@
       </div>
     </button>
 
+    <!-- BELL NOTIFICATIONS -->
+    <div class="notifications-bell-container" *ngIf="isLoggedIn">
+      <button 
+        type="button" 
+        class="bell-btn" 
+        (click)="toggleNotifications($event)"
+        [attr.aria-label]="'Notificaciones (' + notifications.length + ')'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <span class="unread-badge" *ngIf="notifications.length > 0">
+          {{ notifications.length }}
+        </span>
+      </button>
+
+      <!-- DROPDOWN NOTIFICATIONS CARD -->
+      <div class="notifications-dropdown" *ngIf="showNotificationsDropdown" (click)="$event.stopPropagation()">
+        <div class="dropdown-header">
+          <h3>Notificaciones ({{ role === 'ADMIN' || role === 'ADMINISTRADOR' ? 'Admin' : role | titlecase }})</h3>
+          <button class="clear-all-btn" (click)="clearAllNotifications()">Limpiar</button>
+        </div>
+        
+        <div class="notifications-list">
+          <div *ngFor="let notif of notifications" class="notification-item">
+            <p class="notif-message">{{ notif.message }}</p>
+            <button class="notif-action-btn" (click)="readAndNavigate(notif)">
+              {{ notif.actionText }} ➔
+            </button>
+          </div>
+          <div *ngIf="notifications.length === 0" class="empty-notifications">
+            No tienes notificaciones pendientes.
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div
       class="profile"
       routerLink="/profile"

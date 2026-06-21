@@ -1,6 +1,6 @@
 <div class="profile-page">
 
-  <div class="profile-container">
+  <div class="profile-container" *ngIf="isLoggedIn; else guestView">
 
     <div class="profile-sidebar">
 
@@ -140,8 +140,55 @@
         Información actualizada correctamente.
       </div>
 
+      <!-- SECCIÓN DE SOPORTE Y SOLICITUDES (ADMIN NOTIFICATIONS) -->
+      <div class="support-section" style="margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px;">
+        <h2 style="color: #fff; font-size: 1.4rem; font-weight: 700; margin-bottom: 5px;">Solicitudes y Soporte Técnico</h2>
+        <p style="color: #cbd5e0; font-size: 0.9rem; margin-bottom: 20px;">Envía solicitudes directamente al administrador de la plataforma.</p>
+        
+        <div class="support-alert" *ngIf="supportSuccessMessage" style="margin-bottom: 20px; background: rgba(212,175,55,0.1); color: #ffe259; border: 1px solid rgba(212,175,55,0.3); padding: 12px; border-radius: 8px; font-weight: 600; font-size: 0.9rem;">
+          ✓ {{ supportSuccessMessage }}
+        </div>
+        
+        <div class="support-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <!-- Request Role Change -->
+          <div class="support-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 12px;">
+            <h3 style="color: #ffe259; font-size: 1.1rem; font-weight: 600; margin-bottom: 12px;">Cambio de Rol</h3>
+            <label style="display: block; margin-bottom: 8px; font-size: 0.85rem; color: #a0aec0;">Seleccionar nuevo rol:</label>
+            <select [(ngModel)]="solicitudRol" style="width: 100%; padding: 10px; background: #1b1d26; color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; outline: none; margin-bottom: 15px;">
+              <option value="instructor">Instructor</option>
+              <option value="administrador">Administrador</option>
+            </select>
+            <button type="button" (click)="requestRoleChange()" style="width: 100%; background: #d4af37; color: #111; font-weight: 700; border: none; padding: 10px; border-radius: 6px; cursor: pointer; transition: background 0.2s;">
+              Solicitar Rol
+            </button>
+          </div>
+          
+          <!-- System Error Report -->
+          <div class="support-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 20px; border-radius: 12px;">
+            <h3 style="color: #ef4444; font-size: 1.1rem; font-weight: 600; margin-bottom: 12px;">Reportar Error</h3>
+            <label style="display: block; margin-bottom: 8px; font-size: 0.85rem; color: #a0aec0;">Descripción del problema:</label>
+            <textarea [(ngModel)]="reporteError" placeholder="Describe brevemente la falla..." style="width: 100%; height: 65px; padding: 10px; background: #1b1d26; color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; outline: none; resize: none; margin-bottom: 12px; font-family: inherit; font-size: 0.85rem;"></textarea>
+            <button type="button" (click)="reportSystemError()" [disabled]="!reporteError || !reporteError.trim()" style="width: 100%; background: #ef4444; color: #fff; font-weight: 700; border: none; padding: 10px; border-radius: 6px; cursor: pointer; transition: background 0.2s;">
+              Enviar Reporte
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
 
   </div>
+
+  <ng-template #guestView>
+    <div class="guest-profile-card" style="max-width: 500px; margin: 80px auto; padding: 40px; background: rgba(30,34,48,0.8); border: 1px solid rgba(212,175,55,0.25); border-radius: 16px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); backdrop-filter: blur(10px); animation: fadeIn 0.4s ease-out;">
+      <div class="guest-icon" style="font-size: 4rem; margin-bottom: 20px; color: #d4af37;">👤</div>
+      <h2 style="font-size: 1.6rem; color: #fff; margin-bottom: 15px; font-weight: 700;">Para modificar perfil primero debes tener una cuenta</h2>
+      <p style="color: #cbd5e0; line-height: 1.6; margin-bottom: 25px;">Registra tu cuenta en TrainShier para poder acceder al módulo de caja POS, guardar estadísticas de ventas y recibir calificaciones de tu instructor.</p>
+      <div style="display: flex; gap: 15px; justify-content: center;">
+        <button class="btn-guest-sec" routerLink="/login" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 12px 25px; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none;">Iniciar sesión</button>
+        <button class="btn-guest-pri" routerLink="/register" style="background: linear-gradient(135deg, #ffe259 0%, #ffa751 100%); color: #111; border: none; padding: 12px 25px; border-radius: 8px; font-weight: 700; cursor: pointer; text-decoration: none; box-shadow: 0 4px 15px rgba(212,175,55,0.3);">Registrarse</button>
+      </div>
+    </div>
+  </ng-template>
 
 </div>

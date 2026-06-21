@@ -126,6 +126,19 @@ export class InstructorCommentsComponent implements OnInit {
 
     this.commentService.create(payload).subscribe({
       next: (savedComment) => {
+        // Trigger notification for the Apprentice role
+        const savedNotifs = localStorage.getItem('trainshier_notifications');
+        let notifs = savedNotifs ? JSON.parse(savedNotifs) : [];
+        notifs.push({
+          id: String(Date.now()),
+          role: 'APRENDIZ',
+          message: `📋 El instructor calificó tu simulación de "${this.comment.module}" con un puntaje de ${this.comment.score}.`,
+          actionText: 'Ver Calificación',
+          route: '/evaluation',
+          read: false
+        });
+        localStorage.setItem('trainshier_notifications', JSON.stringify(notifs));
+
         this.loadComments();
         this.notification = 'Evaluación guardada correctamente.';
         this.comment = {
