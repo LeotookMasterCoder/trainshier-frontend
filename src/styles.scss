@@ -237,3 +237,19 @@ a:hover {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--gold-soft);
 }
+
+/* Responsividad global de tablas */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+@media (max-width: 768px) {
+  table {
+    display: block !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}

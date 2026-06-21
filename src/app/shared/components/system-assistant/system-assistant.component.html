@@ -49,8 +49,7 @@
         <div class="message-bubble-container">
           <span class="sender-name">{{ msg.sender }}</span>
           <div class="message-bubble">
-            <!-- Renderizado simple de markdown básico (negrita, código, listas) -->
-            <p [innerHTML]="msg.text"></p>
+            <p>{{ msg.text }}</p>
           </div>
           <span class="time">{{ msg.timestamp | date:'shortTime' }}</span>
         </div>

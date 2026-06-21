@@ -134,6 +134,7 @@
 }
 
 .info-block {
+  min-width: 0;
   h3 {
     font-size: 1.3rem;
     color: var(--accent);
@@ -186,6 +187,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  min-width: 0;
 
   .svg-diagram {
     width: 100%;
