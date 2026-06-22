@@ -36,6 +36,7 @@ import { ProfileComponent } from './features/profile/profile.component';
 import { ManualComponent } from './features/manual/manual.component';
 
 import { TransactionFormComponent } from './features/transactions/transaction-form/transaction-form.component';
+import { TransactionListComponent } from './features/transactions/transaction-list/transaction-list.component';
 
 
 import { InstructorCommentsComponent } from './features/evaluation/instructor-comments/instructor-comments.component';
@@ -68,6 +69,7 @@ import { CoreModule } from './core/core.module';
     ProfileComponent,
 
     TransactionFormComponent,
+    TransactionListComponent,
 
     InstructorCommentsComponent,
 

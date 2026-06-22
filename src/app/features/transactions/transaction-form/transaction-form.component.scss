@@ -1,104 +1,104 @@
-.transaction-container{
-  width:100%;
-  min-height:100vh;
-  padding:40px 20px;
-  background:#f3f4f6;
-  display:flex;
-  justify-content:center;
-  align-items:center;
+.transaction-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+  font-family: var(--font-outfit), 'Inter', sans-serif;
+  color: var(--text);
+  transition: var(--transition);
 }
 
-.card{
-  width:100%;
-  max-width:500px;
-  background:white;
-  border-radius:14px;
-  padding:30px;
-  border:1px solid #d1d5db;
+.info-banner-card {
+  background: var(--surface) !important;
+  border: 1px solid var(--border-soft) !important;
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--r-md);
+  
+  h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
 }
 
-h2{
-  text-align:center;
-  margin-bottom:25px;
-  color:#111827;
+/* REJILLA DE DISEÑO DE TRANSACCIONES */
+.transactions-layout-grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 30px;
+  align-items: start;
+  min-width: 0;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 25px;
+  }
 }
 
-.input-group{
-  display:flex;
-  flex-direction:column;
-  margin-bottom:18px;
+.form-column,
+.list-column {
+  min-width: 0; /* Evita desbordamiento en CSS Grid */
 }
 
-label{
-  margin-bottom:8px;
-  font-size:14px;
-  color:#374151;
+.card {
+  background: var(--surface) !important;
+  border: 1px solid var(--border-soft) !important;
+  box-shadow: var(--shadow);
+  border-radius: var(--r-md);
+  padding: 30px;
+  transition: var(--transition);
+
+  h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-top: 0;
+    margin-bottom: 25px;
+    border-bottom: 1.5px dashed var(--border-soft);
+    padding-bottom: 12px;
+  }
 }
 
-input{
-  padding:13px;
-  border:1px solid #d1d5db;
-  border-radius:8px;
-  font-size:14px;
-  outline:none;
-}
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
 
-input:focus{
-  border:1px solid #d89a00;
-}
-
-small{
-  margin-top:6px;
-  color:#dc2626;
-}
-
-button{
-  width:100%;
-  padding:14px;
-  border:none;
-  border-radius:8px;
-  background:#d89a00;
-  color:white;
-  font-size:15px;
-  cursor:pointer;
-}
-
-body.dark-mode .transaction-container{
-  background:#111827;
-}
-
-body.dark-mode .card{
-  background:#1f2937;
-  border:1px solid #374151;
-}
-
-body.dark-mode h2,
-body.dark-mode label{
-  color:white;
-}
-
-body.dark-mode input{
-  background:#374151;
-  color:white;
-  border:1px solid #4b5563;
-}
-
-@media (min-width:481px) and (max-width:768px){
-
-  .card{
-    padding:25px;
+  label {
+    margin-bottom: 8px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text);
   }
 
+  input {
+    padding: 12px 14px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-soft);
+    color: var(--text);
+    border-radius: var(--r-sm);
+    font-size: 14px;
+    outline: none;
+    transition: var(--transition);
+
+    &:focus {
+      border-color: var(--accent);
+      box-shadow: var(--ring);
+    }
+  }
 }
 
-@media (max-width:480px){
-
-  .transaction-container{
-    padding:20px 15px;
+/* RESPONSIVIDAD */
+@media (max-width: 768px) {
+  .transaction-container {
+    margin: 20px auto;
+    padding: 0 12px;
   }
 
-  .card{
-    padding:20px;
+  .card {
+    padding: 20px !important;
+    
+    h2 {
+      font-size: 1.25rem;
+      margin-bottom: 18px;
+    }
   }
-
 }

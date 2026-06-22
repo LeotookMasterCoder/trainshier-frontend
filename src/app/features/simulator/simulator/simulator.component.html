@@ -146,34 +146,6 @@
         </table>
       </div>
 
-      <!-- CHAT INTERACTIVO CON EL CLIENTE (IA GEMINI) -->
-      <div class="card customer-chat-card" *ngIf="simulationStarted">
-        <h2>Conversar con {{ currentCustomer.name }} (IA Cliente)</h2>
-        <div class="chat-messages-container" #chatContainer>
-          <div *ngFor="let msg of chatMessages" class="chat-bubble-wrapper" [class.user]="msg.sender === 'Cajero (Tú)'" [class.system]="msg.sender === 'Sistema'">
-            <div class="chat-sender">{{ msg.sender }}</div>
-            <div class="chat-bubble">
-              {{ msg.text }}
-            </div>
-          </div>
-          <div class="chat-loading-bubble" *ngIf="isChatLoading">
-            <span>El cliente está pensando...</span>
-          </div>
-        </div>
-        
-        <div class="chat-input-row">
-          <input 
-            type="text" 
-            placeholder="Pregúntale detalles de su compra o responde a sus inquietudes..." 
-            [(ngModel)]="chatMessageInput" 
-            (keyup.enter)="sendMessageToCustomer()"
-            [disabled]="isChatLoading">
-          <button (click)="sendMessageToCustomer()" [disabled]="isChatLoading || !chatMessageInput.trim()">
-            Enviar 💬
-          </button>
-        </div>
-      </div>
-
       <!-- VISUALIZADOR DE INVENTARIO -->
       <div class="card">
         <div class="inventory-header-row">
@@ -220,6 +192,34 @@
           </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- CHAT INTERACTIVO CON EL CLIENTE (IA GEMINI) -->
+      <div class="card customer-chat-card" *ngIf="simulationStarted">
+        <h2>Conversar con {{ currentCustomer.name }} (IA Cliente)</h2>
+        <div class="chat-messages-container" #chatContainer>
+          <div *ngFor="let msg of chatMessages" class="chat-bubble-wrapper" [class.user]="msg.sender === 'Cajero (Tú)'" [class.system]="msg.sender === 'Sistema'">
+            <div class="chat-sender">{{ msg.sender }}</div>
+            <div class="chat-bubble">
+              {{ msg.text }}
+            </div>
+          </div>
+          <div class="chat-loading-bubble" *ngIf="isChatLoading">
+            <span>El cliente está pensando...</span>
+          </div>
+        </div>
+        
+        <div class="chat-input-row">
+          <input 
+            type="text" 
+            placeholder="Pregúntale detalles de su compra o responde a sus inquietudes..." 
+            [(ngModel)]="chatMessageInput" 
+            (keyup.enter)="sendMessageToCustomer()"
+            [disabled]="isChatLoading">
+          <button (click)="sendMessageToCustomer()" [disabled]="isChatLoading || !chatMessageInput.trim()">
+            Enviar 💬
+          </button>
+        </div>
       </div>
 
     </div>

@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TransactionService } from '../../../core/services/transaction.service';
+import { TransactionListComponent } from '../transaction-list/transaction-list.component';
 
 @Component({
   selector:'app-transaction-form',
@@ -9,10 +10,11 @@ import { TransactionService } from '../../../core/services/transaction.service';
 })
 
 export class TransactionFormComponent{
+  @ViewChild(TransactionListComponent) listComponent?: TransactionListComponent;
 
   form:FormGroup;
-
   successMessage:string='';
+  errorMessage:string='';
 
   constructor(
     private fb:FormBuilder,
@@ -57,17 +59,20 @@ export class TransactionFormComponent{
   }
 
   submit():void{
-
     if(this.form.invalid){
-
-      this.successMessage='Completa todos los campos';
+      this.errorMessage = 'Por favor, complete todos los campos obligatorios.';
+      this.successMessage = '';
+      setTimeout(() => this.errorMessage = '', 3000);
       return;
-
     }
 
     const val = this.form.value;
     const transaction = {
-      status: 'COMPLETED',
+      status: 'COMPLETADO',
+      client: 'Cliente Manual',
+      type: 'POS',
+      product: val.product,
+      quantity: val.quantity,
       total: val.quantity * val.price,
       errors: 0,
       effectiveness: 100.0,
@@ -77,14 +82,19 @@ export class TransactionFormComponent{
     this.transactionService.create(transaction).subscribe({
       next: (savedTx) => {
         this.successMessage = 'Transacción registrada correctamente';
+        this.errorMessage = '';
         this.form.reset();
+        if (this.listComponent) {
+          this.listComponent.load();
+        }
+        setTimeout(() => this.successMessage = '', 3000);
       },
       error: (err) => {
         console.error('Error saving manual transaction in DB:', err);
-        this.successMessage = 'Error al registrar la transacción';
+        this.errorMessage = 'Error al registrar la transacción en el servidor';
+        this.successMessage = '';
+        setTimeout(() => this.errorMessage = '', 3000);
       }
     });
-
   }
-
 }

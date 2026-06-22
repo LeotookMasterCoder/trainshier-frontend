@@ -35,64 +35,82 @@ export class StatisticsComponent implements OnInit {
     this.loadStatistics();
   }
 
+  private cachedUsers: any[] | null = null;
+  private cachedReports: any[] | null = null;
+
   loadStatistics(): void {
-    // Load Users
+    // 1. Load Users
     this.userService.getAll().subscribe({
       next: (usersList) => {
         this.totalUsers = usersList.length;
         this.apprentices = usersList.filter(u => u.role === 'APRENDIZ').length;
         this.instructors = usersList.filter(u => u.role === 'INSTRUCTOR').length;
-
-        // Create initial ranking structure
-        const initialRanking = usersList.map(u => ({
-          name: u.name || 'Usuario',
-          role: u.role || 'APRENDIZ',
-          effectiveness: 0,
-          simulations: 0
-        }));
-
-        // Load Reports (Simulations)
-        this.reportService.getAll().subscribe({
-          next: (reportsList) => {
-            this.totalSimulations = reportsList.length;
-            this.totalCustomers = reportsList.length * 3; // Approx 3 customers per simulation session
-            
-            if (reportsList.length > 0) {
-              const totalScore = reportsList.reduce((sum, r) => sum + (r.score || 0), 0);
-              this.averageScore = Math.round(totalScore / reportsList.length);
-              this.successRate = this.averageScore;
-              
-              const scores = reportsList.map(r => r.score || 0);
-              this.bestScore = Math.max(...scores);
-            }
-
-            // Fill rankings
-            initialRanking.forEach(userItem => {
-              const userReports = reportsList.filter(r => r.user && r.user.name === userItem.name);
-              userItem.simulations = userReports.length;
-              if (userReports.length > 0) {
-                const userSum = userReports.reduce((sum, r) => sum + (r.effectiveness || 0), 0);
-                userItem.effectiveness = Math.round(userSum / userReports.length);
-              }
-            });
-
-            // Filter out users with 0 simulations and sort by effectiveness
-            this.ranking = initialRanking
-              .filter(u => u.simulations > 0)
-              .sort((a, b) => b.effectiveness - a.effectiveness)
-              .slice(0, 5);
-          }
-        });
+        this.updateRanking(usersList, null);
+      },
+      error: (err) => {
+        console.error('Error loading users for statistics:', err);
       }
     });
 
-    // Load Transactions
+    // 2. Load Reports (Simulations)
+    this.reportService.getAll().subscribe({
+      next: (reportsList) => {
+        this.totalSimulations = reportsList.length;
+        this.totalCustomers = reportsList.length * 3; // Aprox 3 clientes por simulacion
+        
+        if (reportsList.length > 0) {
+          const totalScore = reportsList.reduce((sum, r) => sum + (r.score || 0), 0);
+          this.averageScore = Math.round(totalScore / reportsList.length);
+          this.successRate = this.averageScore;
+          
+          const scores = reportsList.map(r => r.score || 0);
+          this.bestScore = Math.max(...scores);
+        }
+        this.updateRanking(null, reportsList);
+      },
+      error: (err) => {
+        console.error('Error loading reports for statistics:', err);
+      }
+    });
+
+    // 3. Load Transactions
     this.transactionService.getAll().subscribe({
       next: (txList) => {
         this.totalTransactions = txList.length;
-        this.productsSold = txList.length * 4; // Approx 4 products sold per POS checkout transaction
+        this.productsSold = txList.length * 4; // Aprox 4 productos por venta
         this.totalErrors = txList.reduce((sum, t) => sum + (t.errors || 0), 0);
+      },
+      error: (err) => {
+        console.error('Error loading transactions for statistics:', err);
       }
     });
+  }
+
+  private updateRanking(usersList: any[] | null, reportsList: any[] | null): void {
+    if (usersList) this.cachedUsers = usersList;
+    if (reportsList) this.cachedReports = reportsList;
+
+    if (this.cachedUsers && this.cachedReports) {
+      const initialRanking = this.cachedUsers.map(u => ({
+        name: u.name || 'Usuario',
+        role: u.role || 'APRENDIZ',
+        effectiveness: 0,
+        simulations: 0
+      }));
+
+      initialRanking.forEach(userItem => {
+        const userReports = this.cachedReports!.filter(r => r.user && r.user.name === userItem.name);
+        userItem.simulations = userReports.length;
+        if (userReports.length > 0) {
+          const userSum = userReports.reduce((sum, r) => sum + (r.effectiveness || 0), 0);
+          userItem.effectiveness = Math.round(userSum / userReports.length);
+        }
+      });
+
+      this.ranking = initialRanking
+        .filter(u => u.simulations > 0)
+        .sort((a, b) => b.effectiveness - a.effectiveness)
+        .slice(0, 5);
+    }
   }
 }
