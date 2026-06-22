@@ -76,7 +76,7 @@
         <span>{{ errorMessage }}</span>
       </div>
 
-      <form [formGroup]="form" (ngSubmit)="validateLogin()">
+      <form [formGroup]="form" (ngSubmit)="login()">
         
         <div class="field">
           <label for="login-email">Correo electrónico</label>
@@ -110,23 +110,8 @@
           </small>
         </div>
 
-        <!-- Confirm modal box inline -->
-        <div class="confirm-box" *ngIf="showConfirm">
-          <h3>¿Confirmas el ingreso al sistema?</h3>
-          <div class="confirm-info">
-            <p><strong>Nombre:</strong> {{ previewUser.name }}</p>
-            <p><strong>Correo:</strong> {{ previewUser.email }}</p>
-            <p><strong>Rol detectado:</strong> {{ previewUser.role }}</p>
-          </div>
-          <div class="confirm-actions">
-            <button type="button" class="btn btn-secondary" (click)="showConfirm = false">Cancelar</button>
-            <button type="button" class="btn btn-primary" (click)="login()">Confirmar</button>
-          </div>
-        </div>
-
         <!-- Action Button -->
         <button 
-          *ngIf="!showConfirm" 
           class="btn btn-primary main-btn" 
           [class.loading]="isLoading"
           type="submit"
@@ -136,7 +121,6 @@
 
         <!-- RFID Access Button -->
         <button 
-          *ngIf="!showConfirm" 
           class="btn btn-secondary rfid-btn" 
           type="button"
           (click)="showRfidModal = true"

@@ -10,8 +10,6 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class LoginComponent implements OnInit {
 
-  showConfirm: boolean = false;
-  previewUser: any = {};
   errorMessage: string = '';
   darkMode: boolean = false;
   isLoading: boolean = false;
@@ -134,35 +132,12 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  validateLogin(): void {
+  login(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
-    this.previewUser = {
-      email: this.form.value.email,
-      name: 'Usuario Demo',
-      role: 'APRENDIZ'
-    };
-
-    // Auto-detect preview details based on email
-    const email = this.form.value.email?.toLowerCase();
-    if (email?.includes('admin')) {
-      this.previewUser.name = 'Administrador Sistema';
-      this.previewUser.role = 'ADMINISTRADOR';
-    } else if (email?.includes('instructor')) {
-      this.previewUser.name = 'Instructor Formación';
-      this.previewUser.role = 'INSTRUCTOR';
-    } else if (email?.includes('aprendiz')) {
-      this.previewUser.name = 'Aprendiz Caja POS';
-      this.previewUser.role = 'APRENDIZ';
-    }
-
-    this.showConfirm = true;
-  }
-
-  login(): void {
     this.isLoading = true;
     this.errorMessage = '';
     this.authService.login(this.form.value)
@@ -196,7 +171,6 @@ export class LoginComponent implements OnInit {
         error: (err) => {
           this.isLoading = false;
           this.errorMessage = err.error?.message || 'Correo o contraseña incorrectos';
-          this.showConfirm = false;
         }
       });
   }
