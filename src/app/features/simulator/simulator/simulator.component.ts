@@ -1002,6 +1002,8 @@ export class SimulatorComponent implements OnInit {
           const lowerRes = res.response.toLowerCase();
           if (lowerRes.includes('gracias') || lowerRes.includes('amable') || lowerRes.includes('entiendo')) {
             this.customerSatisfaction = Math.min(100, this.customerSatisfaction + 5);
+            this.timeLeft = Math.min(120, this.timeLeft + 15);
+            this.showToast('¡El cliente se muestra satisfecho! Tiempo de atención extendido (+15s)', false);
           } else if (lowerRes.includes('molest') || lowerRes.includes('tarde') || lowerRes.includes('apur')) {
             this.customerSatisfaction = Math.max(0, this.customerSatisfaction - 5);
           }
