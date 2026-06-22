@@ -921,18 +921,19 @@ button {
 .customer-chat-card {
   margin-bottom: 25px;
   border: 1px solid var(--border-soft);
+  background: var(--bg-item) !important; /* Muted background */
 
   h2 {
-    font-size: 1.15rem;
-    font-weight: 700;
+    font-size: 1.05rem;
+    font-weight: 600;
     margin-bottom: 12px;
-    color: var(--text); /* Menos llamativo, color normal de texto */
+    color: var(--text-soft); /* Menos llamativo, color normal de texto */
   }
 
   .chat-messages-container {
-    height: 160px; /* Más compacto, de 250px a 160px */
+    height: 150px; /* Más compacto, de 250px a 150px */
     overflow-y: auto;
-    background: var(--surface-2); /* Fondo neutral sin tinte dorado */
+    background: var(--surface); /* Fondo neutral */
     border-radius: 10px;
     padding: 12px;
     display: flex;
@@ -964,7 +965,7 @@ button {
     }
 
     .chat-bubble {
-      background: var(--surface);
+      background: var(--surface-2);
       color: var(--text);
       border: 1px solid var(--border-soft);
       padding: 10px 14px;
@@ -979,14 +980,14 @@ button {
       align-items: flex-end;
 
       .chat-sender {
-        color: var(--accent);
+        color: var(--text-soft);
         padding-right: 5px;
       }
 
       .chat-bubble {
-        background: color-mix(in srgb, var(--accent) 15%, var(--surface));
-        color: var(--accent);
-        border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+        background: var(--surface);
+        color: var(--text);
+        border: 1px solid var(--border-soft);
         border-radius: 12px 12px 2px 12px;
       }
     }

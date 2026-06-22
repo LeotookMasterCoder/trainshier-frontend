@@ -48,6 +48,14 @@
     </a>
 
     <a
+      *ngIf="role==='INSTRUCTOR' || role==='ADMIN'"
+      routerLink="/transactions"
+      routerLinkActive="active-link"
+    >
+      Transacciones Manuales
+    </a>
+
+    <a
       *ngIf="role==='INSTRUCTOR'"
       routerLink="/evaluation"
       routerLinkActive="active-link"
