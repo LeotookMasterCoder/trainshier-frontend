@@ -19,9 +19,8 @@
         inventario, facturación y caja registradora.
       </p>
     </div>
-
     <div class="header-badges">
-      <button class="stats-toggle-btn" (click)="showStats = !showStats">
+      <button class="stats-toggle-btn" (click)="toggleStats($event)">
         📊 {{ showStats ? 'Ocultar Estadísticas' : 'Ver Estadísticas' }}
       </button>
       <button 

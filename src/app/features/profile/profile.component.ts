@@ -3,6 +3,7 @@ import {
   FormBuilder,
   Validators
 } from '@angular/forms';
+import { UserService } from '../../core/services/user.service';
 
 @Component({
   selector:'app-profile',
@@ -11,8 +12,8 @@ import {
 })
 export class ProfileComponent{
 
-  showSuccess:boolean=false;
-
+  showSuccess: boolean = false;
+  errorMessage: string = '';
   profileImage:string='assets/img/default-profile.png';
 
   role:string='APRENDIZ';
@@ -25,9 +26,11 @@ export class ProfileComponent{
   solicitudRol: string = 'instructor';
   reporteError: string = '';
   supportSuccessMessage: string = '';
-
   form=this.fb.group({
-
+    name:[
+      '',
+      Validators.required
+    ],
     email:[
       '',
       [
@@ -35,7 +38,6 @@ export class ProfileComponent{
         Validators.email
       ]
     ],
-
     username:[
       '',
       [
@@ -45,15 +47,13 @@ export class ProfileComponent{
         )
       ]
     ],
-
     birthDate:['']
-
   });
 
   constructor(
-    private fb:FormBuilder
+    private fb: FormBuilder,
+    private userService: UserService
   ){
-
     this.isLoggedIn = !!localStorage.getItem('token');
     
     if (!this.isLoggedIn) {
@@ -63,38 +63,17 @@ export class ProfileComponent{
       return;
     }
 
-    this.role=
-      localStorage.getItem('role')
-      || 'APRENDIZ';
-
-    this.name=
-      localStorage.getItem('name')
-      || 'Usuario TrainShier';
-
-    this.userId=
-      localStorage.getItem('userId')
-      || 'TRN-5642';
-
-    this.profileImage=
-      localStorage.getItem('profileImage')
-      || 'assets/img/default-profile.png';
+    this.role = localStorage.getItem('role') || 'APRENDIZ';
+    this.name = localStorage.getItem('name') || 'Usuario TrainShier';
+    this.userId = localStorage.getItem('userId') || 'TRN-5642';
+    this.profileImage = localStorage.getItem('profileImage') || 'assets/img/default-profile.png';
 
     this.form.patchValue({
-
-      email:
-        localStorage.getItem('email')
-        || '',
-
-      username:
-        localStorage.getItem('username')
-        || '',
-
-      birthDate:
-        localStorage.getItem('birthDate')
-        || ''
-
+      name: this.name,
+      email: localStorage.getItem('email') || '',
+      username: localStorage.getItem('username') || '',
+      birthDate: localStorage.getItem('birthDate') || ''
     });
-
   }
 
   changePhoto(event:any):void{
@@ -122,41 +101,43 @@ export class ProfileComponent{
     reader.readAsDataURL(file);
 
   }
-
-  saveChanges():void{
-
-    if(this.form.invalid){
-
+  saveChanges(): void {
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
-
     }
 
-    localStorage.setItem(
-      'email',
-      this.form.value.email || ''
-    );
+    this.errorMessage = '';
+    const userIdNum = Number(this.userId);
+    const updatePayload = {
+      name: this.form.value.name,
+      email: this.form.value.email
+    };
+    this.userService.update(userIdNum, updatePayload).subscribe({
+      next: (updatedUser: any) => {
+        // Save back to localStorage
+        localStorage.setItem('name', updatedUser.name);
+        localStorage.setItem('email', updatedUser.email);
+        localStorage.setItem('username', this.form.value.username || '');
+        localStorage.setItem('birthDate', this.form.value.birthDate || '');
 
-    localStorage.setItem(
-      'username',
-      this.form.value.username || ''
-    );
+        // Update class property
+        this.name = updatedUser.name;
 
-    localStorage.setItem(
-      'birthDate',
-      this.form.value.birthDate || ''
-    );
-
-    this.showSuccess=true;
-
-    setTimeout(()=>{
-
-      this.showSuccess=false;
-
-    },3000);
-
+        this.showSuccess = true;
+        setTimeout(() => {
+          this.showSuccess = false;
+        }, 3000);
+      },
+      error: (err: any) => {
+        console.error('Error updating profile:', err);
+        this.errorMessage = err.error?.message || 'Error al actualizar perfil en el servidor';
+        setTimeout(() => {
+          this.errorMessage = '';
+        }, 4000);
+      }
+    });
   }
-
   requestRoleChange(): void {
     const savedNotifs = localStorage.getItem('trainshier_notifications');
     let notifs = savedNotifs ? JSON.parse(savedNotifs) : [];

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked, HostListener } from '@angular/core';
 
 interface Message {
   sender: 'Asistente' | 'Tú';
@@ -28,6 +28,17 @@ export class SystemAssistantComponent implements OnInit, AfterViewChecked {
     { text: '¿Cómo aplico descuentos e IVA?', category: 'promotions' },
     { text: '¿Qué roles de usuario existen?', category: 'roles' }
   ];
+
+  constructor(private elementRef: ElementRef) {}
+
+  @HostListener('document:click', ['$event'])
+  clickOut(event: MouseEvent): void {
+    if (!this.isOpen) return;
+
+    if (!this.elementRef.nativeElement.contains(event.target)) {
+      this.isOpen = false;
+    }
+  }
 
   ngOnInit(): void {
     // Mensaje de bienvenida inicial sin emojis, comillas ni caracteres especiales
@@ -83,11 +94,17 @@ export class SystemAssistantComponent implements OnInit, AfterViewChecked {
   selectSuggestion(suggestion: string): void {
     this.sendMessage(suggestion);
   }
-
   private generateResponse(input: string): string {
     const normalized = this.normalizeText(input);
 
-    // Detección de palabras clave y lógica de respuestas limpias en español
+    if (this.matches(normalized, ['que es trainshier', 'trainshier', 'plataforma', 'sistema', 'proyecto'])) {
+      return 'TrainShier es una plataforma educativa interactiva diseñada para la formación y el entrenamiento de aprendices en operaciones de caja POS y atención al cliente. Integra tecnologías modernas como identificación por RFID, escaneo de códigos de barra mediante cámara web y un simulador de clientes con Inteligencia Artificial.';
+    }
+
+    if (this.matches(normalized, ['que es el simulador', 'simulador', 'funcionamiento del simulador', 'entrenamiento'])) {
+      return 'El simulador de TrainShier es un entorno de simulación en tiempo real en el cual los aprendices pueden practicar el registro de productos en un sistema de caja registradora POS, el cálculo del IVA y promociones de temporada, el proceso de facturación y la interacción con clientes que tienen temperamentos variados y respuestas dinámicas gracias a la Inteligencia Artificial.';
+    }
+
     if (this.matches(normalized, ['rfid', 'tarjeta', 'lector', 'uid', 'llavero', 'identificacion', 'identificación'])) {
       return 'Inicio de sesión con RFID: En TrainShier puede iniciar sesión acercando su tarjeta RFID física al lector USB sin necesidad de hacer clic en ningún campo.\n\n' +
              'Simulación de Tarjetas Demo:\n' +

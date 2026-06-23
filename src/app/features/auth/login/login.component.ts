@@ -60,8 +60,19 @@ export class LoginComponent implements OnInit {
         
         // Store details in localStorage just like regular login
         localStorage.setItem('token', response.token);
-        localStorage.setItem('role', response.role);
-        localStorage.setItem('name', response.name);
+        
+        let finalRole = 'APRENDIZ';
+        const rawRole = response.role?.toUpperCase();
+        if (rawRole === 'ADMINISTRATOR' || rawRole === 'ADMIN') {
+          finalRole = 'ADMIN';
+        } else if (rawRole === 'INSTRUCTOR') {
+          finalRole = 'INSTRUCTOR';
+        } else {
+          finalRole = 'APRENDIZ';
+        }
+        
+        localStorage.setItem('role', finalRole);
+        localStorage.setItem('name', response.name || 'Usuario');
         localStorage.setItem('userId', String(response.userId));
 
         this.router.navigate(['/home']);
@@ -147,24 +158,19 @@ export class LoginComponent implements OnInit {
           // Store token and user details in localStorage
           localStorage.setItem('token', response.token);
           
-          // Decode details from token or infer role
-          const email = this.form.value.email?.toLowerCase();
           let finalRole = 'APRENDIZ';
-          let finalName = 'Usuario';
-          
-          if (email?.includes('admin')) {
+          const rawRole = response.role?.toUpperCase();
+          if (rawRole === 'ADMINISTRATOR' || rawRole === 'ADMIN') {
             finalRole = 'ADMIN';
-            finalName = 'Administrador';
-          } else if (email?.includes('instructor')) {
+          } else if (rawRole === 'INSTRUCTOR') {
             finalRole = 'INSTRUCTOR';
-            finalName = 'Instructor';
           } else {
             finalRole = 'APRENDIZ';
-            finalName = 'Aprendiz';
           }
 
           localStorage.setItem('role', finalRole);
-          localStorage.setItem('name', finalName);
+          localStorage.setItem('name', response.name || 'Usuario');
+          localStorage.setItem('userId', String(response.userId));
 
           this.router.navigate(['/home']);
         },

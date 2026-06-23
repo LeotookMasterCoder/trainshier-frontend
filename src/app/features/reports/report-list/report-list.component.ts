@@ -53,28 +53,90 @@ export class ReportsComponent implements OnInit {
     private reportService: ReportService,
     private productService: ProductService
   ) {}
-
   ngOnInit(): void {
-    // Load Users and calculate simulation metrics from reports
+    // 1. Load reports list
+    this.reportService.getAll().subscribe({
+      next: (reportsList) => {
+        this.totalSimulations = reportsList.length;
+        
+        if (reportsList.length > 0) {
+          const totalScore = reportsList.reduce((sum, r) => sum + (r.score || 0), 0);
+          this.averageScore = Math.round(totalScore / reportsList.length);
+        }
+
+        // Map reports to users fallback in case usersList is empty or failed
+        if (this.users.length === 0) {
+          const uniqueNames = new Set<string>();
+          const tempUsers: any[] = [];
+          reportsList.forEach(r => {
+            if (r.user && r.user.name && !uniqueNames.has(r.user.name)) {
+              uniqueNames.add(r.user.name);
+              let roleMapped = 'APRENDIZ';
+              if (r.user.role === 'ADMINISTRATOR' || r.user.role === 'ADMIN') {
+                roleMapped = 'ADMIN';
+              } else if (r.user.role === 'INSTRUCTOR') {
+                roleMapped = 'INSTRUCTOR';
+              }
+              tempUsers.push({
+                name: r.user.name,
+                role: roleMapped,
+                simulations: 0,
+                effectiveness: 100
+              });
+            }
+          });
+          this.users = tempUsers;
+          this.totalUsers = tempUsers.length;
+        }
+
+        // Calculate user metrics
+        this.users.forEach(userItem => {
+          const userReports = reportsList.filter(r => r.user && r.user.name === userItem.name);
+          userItem.simulations = userReports.length;
+          if (userReports.length > 0) {
+            const userSum = userReports.reduce((sum, r) => sum + (r.effectiveness || 0), 0);
+            userItem.effectiveness = Math.round(userSum / userReports.length);
+          }
+        });
+
+        this.topUsers = [...this.users]
+          .sort((a, b) => b.effectiveness - a.effectiveness)
+          .slice(0, 5);
+
+        this.originalUsers = [...this.users];
+        this.generateAIAnalysis();
+      },
+      error: (err) => {
+        console.error('Error loading reports:', err);
+      }
+    });
+
+    // 2. Load users list (independent with silent fallback)
     this.userService.getAll().subscribe({
       next: (usersList) => {
         this.totalUsers = usersList.length;
-        this.users = usersList.map(u => ({
-          name: u.name || 'Usuario',
-          role: u.role || 'APRENDIZ',
-          simulations: 0,
-          effectiveness: 100
-        }));
+        
+        // Map roles correctly
+        const mappedUsers = usersList.map(u => {
+          let roleMapped = 'APRENDIZ';
+          if (u.role === 'ADMINISTRATOR' || u.role === 'ADMIN') {
+            roleMapped = 'ADMIN';
+          } else if (u.role === 'INSTRUCTOR') {
+            roleMapped = 'INSTRUCTOR';
+          }
+          return {
+            name: u.name || 'Usuario',
+            role: roleMapped,
+            simulations: 0,
+            effectiveness: 100
+          };
+        });
 
+        this.users = mappedUsers;
+
+        // Re-run report association
         this.reportService.getAll().subscribe({
           next: (reportsList) => {
-            this.totalSimulations = reportsList.length;
-            
-            if (reportsList.length > 0) {
-              const totalScore = reportsList.reduce((sum, r) => sum + (r.score || 0), 0);
-              this.averageScore = Math.round(totalScore / reportsList.length);
-            }
-
             this.users.forEach(userItem => {
               const userReports = reportsList.filter(r => r.user && r.user.name === userItem.name);
               userItem.simulations = userReports.length;
@@ -92,10 +154,13 @@ export class ReportsComponent implements OnInit {
             this.generateAIAnalysis();
           }
         });
+      },
+      error: (err) => {
+        console.warn('Silent fallback: user list forbidden/error (likely non-admin role)', err);
       }
     });
 
-    // Load Transactions for financial KPIs
+    // 3. Load Transactions
     this.transactionService.getAll().subscribe({
       next: (txList) => {
         this.totalTransactions = txList.length;
@@ -108,7 +173,7 @@ export class ReportsComponent implements OnInit {
       }
     });
 
-    // Load Products count
+    // 4. Load Products count
     this.productService.getAll().subscribe({
       next: (prodList) => {
         this.activeProducts = prodList.length;

@@ -15,8 +15,11 @@ export class UserService {
   getAll(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl);
   }
-
   getById(id: number): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/${id}`);
+  }
+
+  update(id: number, data: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, data);
   }
 }
