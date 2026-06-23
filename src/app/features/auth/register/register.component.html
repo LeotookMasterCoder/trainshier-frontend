@@ -45,7 +45,74 @@
         <span><b>¡Registro exitoso!</b> {{ successMessage }}</span>
       </div>
 
-      <form [formGroup]="form" (ngSubmit)="register()">
+      <!-- ===== TRN AUTHORIZATION FLOW ===== -->
+      <div class="trn-container animate-fade-in" *ngIf="!trnVerified">
+        <p class="lead">Para registrarte como Aprendiz, primero solicita y valida un código de autorización TRN.</p>
+
+        <!-- Instructor Selection Filter -->
+        <div class="field">
+          <label for="trn-instructor">Selecciona un Instructor para solicitar el código</label>
+          <div class="control">
+            <select id="trn-instructor" [(ngModel)]="selectedInstructorId" style="width: 100%;">
+              <option *ngFor="let inst of instructors" [value]="inst.id">{{ inst.name }} ({{ inst.email }})</option>
+              <option *ngIf="instructors.length === 0" [value]="null">Cargando instructores de formación...</option>
+            </select>
+          </div>
+        </div>
+
+        <button 
+          class="btn btn-primary main-btn" 
+          type="button" 
+          (click)="pedirCodigo()" 
+          [disabled]="requestingCode || !selectedInstructorId"
+          style="margin-bottom: 20px; width: 100%;"
+        >
+          <span *ngIf="!requestingCode">Pedir código de autorización</span>
+          <span *ngIf="requestingCode">Enviando solicitud al instructor...</span>
+        </button>
+
+        <!-- Simulator Notification Box (Interactive Demonstration) -->
+        <div class="simulator-box animate-scale-in" *ngIf="generatedTrnCode">
+          <div class="sim-header" style="display: flex; justify-content: space-between; align-items: center; background: rgba(212, 175, 55, 0.1); padding: 8px 12px; border-radius: 6px 6px 0 0; border-bottom: 1px solid rgba(212,175,55,0.2);">
+            <span class="sim-badge" style="font-size: 0.75rem; background: var(--gold); color: var(--gold-ink); padding: 2px 6px; border-radius: 4px; font-weight: bold;">SIMULADOR</span>
+            <span class="sim-title" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Bandeja del Instructor</span>
+          </div>
+          <div class="sim-body" style="padding: 12px; background: rgba(212,175,55,0.02); border: 1px solid rgba(212,175,55,0.1); border-top: none; border-radius: 0 0 6px 6px;">
+            <p style="margin: 0 0 8px 0; font-size: 0.85rem;">El instructor ha aprobado tu solicitud y ha generado un código TRN de autorización:</p>
+            <div class="generated-code-display" style="font-size: 1.25rem; font-weight: 800; color: #ffe259; text-align: center; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px; letter-spacing: 2px; margin-bottom: 8px;">
+              {{ generatedTrnCode }}
+            </div>
+            <button class="btn btn-secondary btn-sm" type="button" (click)="copiarCodigo()" style="font-size: 0.75rem; padding: 4px 8px; width: 100%;">Copiar e ingresar automáticamente</button>
+          </div>
+        </div>
+
+        <!-- Verification Input Field -->
+        <div class="field animate-fade-in" *ngIf="generatedTrnCode" style="margin-top: 20px;">
+          <label for="trn-code">Código TRN de Autorización</label>
+          <div class="control">
+            <input 
+              id="trn-code"
+              type="text" 
+              [(ngModel)]="trnCodeInput" 
+              placeholder="TRN-XXXX"
+              style="text-transform: uppercase; font-family: monospace; letter-spacing: 2px; text-align: center;"
+            >
+          </div>
+        </div>
+
+        <button 
+          class="btn btn-primary" 
+          type="button" 
+          (click)="verificarCodigo()" 
+          *ngIf="generatedTrnCode"
+          style="width: 100%; margin-top: 10px; background: linear-gradient(135deg, #f5af19, #e15f41); color: white; border: none;"
+        >
+          Validar Código y Crear Cuenta
+        </button>
+      </div>
+
+      <!-- ===== REGISTRATION FORM (REVEALED UPON VALIDATION) ===== -->
+      <form [formGroup]="form" (ngSubmit)="register()" *ngIf="trnVerified" class="animate-fade-in">
         
         <div class="field">
           <label for="reg-name">Nombre completo</label>
@@ -77,16 +144,6 @@
           <small class="field-error" *ngIf="form.get('username')?.invalid && form.get('username')?.touched">
             Formato obligatorio: usuario#1234 (letras/números y 4 dígitos).
           </small>
-        </div>
-
-        <div class="field">
-          <label for="reg-role">Rol en la plataforma</label>
-          <div class="control">
-            <select id="reg-role" formControlName="role">
-              <option value="aprendiz">Aprendiz</option>
-              <option value="instructor">Instructor</option>
-            </select>
-          </div>
         </div>
 
         <div class="field">
