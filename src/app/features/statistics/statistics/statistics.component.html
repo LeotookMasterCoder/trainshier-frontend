@@ -1,16 +1,16 @@
-<div class="statistics-container">
+<div class="statistics-container animate-fade-in">
 
-  <div class="header">
-
-    <h1>
-      Estadísticas Generales
-    </h1>
-
-    <p>
-      Indicadores de desempeño y actividad dentro de TrainShier.
-    </p>
-
+  <!-- Tabs Navigation for Admin -->
+  <div class="tabs-header" *ngIf="isAdmin" style="display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+    <button class="tab-btn" (click)="changeTab('stats')" style="background: none; border: none; font-size: 1.1rem; padding: 5px 15px; cursor: pointer; color: var(--text); border-bottom: 2px solid transparent; outline: none; transition: all 0.3s; font-family: var(--font-display);" [style.border-bottom-color]="currentTab === 'stats' ? 'var(--gold)' : 'transparent'" [style.color]="currentTab === 'stats' ? 'var(--gold)' : 'var(--text-soft)'">📊 Estadísticas</button>
+    <button class="tab-btn" (click)="changeTab('users')" style="background: none; border: none; font-size: 1.1rem; padding: 5px 15px; cursor: pointer; color: var(--text); border-bottom: 2px solid transparent; outline: none; transition: all 0.3s; font-family: var(--font-display);" [style.border-bottom-color]="currentTab === 'users' ? 'var(--gold)' : 'transparent'" [style.color]="currentTab === 'users' ? 'var(--gold)' : 'var(--text-soft)'">👥 Gestión de Usuarios</button>
   </div>
+
+  <div *ngIf="currentTab === 'stats'" class="animate-fade-in">
+    <div class="header">
+      <h1>Estadísticas Generales</h1>
+      <p>Indicadores de desempeño y actividad dentro de TrainShier.</p>
+    </div>
 
   <div class="statistics-grid">
 
@@ -182,6 +182,207 @@
 
     </table>
 
+  </div>
+  </div>
+
+  <!-- ===== GESTIÓN DE USUARIOS (ADMIN ONLY) ===== -->
+  <div *ngIf="currentTab === 'users' && isAdmin" class="user-management-panel animate-fade-in">
+    
+    <!-- Success / Error Alert Messages -->
+    <div class="alert" *ngIf="successMessage" style="border-color: #2ecc71; background: rgba(46, 204, 113, 0.1); color: #2ecc71; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 12px 16px; border-radius: var(--r-sm);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width: 20px; height: 20px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <span>{{ successMessage }}</span>
+    </div>
+    <div class="alert error" *ngIf="errorMessage" style="border-color: #e15f41; background: rgba(225,95,65,0.1); color: #e15f41; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding: 12px 16px; border-radius: var(--r-sm);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width: 20px; height: 20px;"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <!-- Management Header Controls -->
+    <div class="management-header" style="display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-bottom: 25px; flex-wrap: wrap;">
+      <div class="search-box" style="flex-grow: 1; min-width: 250px; max-width: 450px;">
+        <input 
+          type="text" 
+          [(ngModel)]="searchQuery" 
+          (ngModelChange)="onSearchChange()" 
+          placeholder="Buscar por nombre, correo, rol o RFID..."
+          style="width: 100%; background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: var(--r-sm); padding: 10px 16px; color: var(--text); font-size: 14px;"
+        >
+      </div>
+      <div class="header-actions" style="display: flex; gap: 12px;">
+        <button class="btn btn-primary" (click)="openCreateInstructor()">
+          <span>➕ Crear Instructor</span>
+        </button>
+        <button class="btn btn-danger" (click)="openTruncateConfirm()">
+          <span>🔄 Reiniciar Tablas</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="table-container" style="width: 100%; overflow-x: auto; border-radius: var(--r-sm); border: 1px solid var(--border-soft); margin-bottom: 20px;">
+      <table class="users-table" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background: var(--surface-2); border-bottom: 1px solid var(--border-soft);">
+            <th style="padding: 14px 20px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; color: var(--accent);">ID</th>
+            <th style="padding: 14px 20px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; color: var(--accent);">Nombre</th>
+            <th style="padding: 14px 20px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; color: var(--accent);">Correo</th>
+            <th style="padding: 14px 20px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; color: var(--accent);">Rol</th>
+            <th style="padding: 14px 20px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; color: var(--accent);">RFID UID</th>
+            <th style="padding: 14px 20px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; color: var(--accent);">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of pagedUsers" style="border-bottom: 1px solid var(--border-soft);">
+            <td style="padding: 14px 20px; color: var(--text-soft);">{{ u.id }}</td>
+            <td style="padding: 14px 20px; font-weight: 500;">{{ u.name }}</td>
+            <td style="padding: 14px 20px; color: var(--text-soft);">{{ u.email }}</td>
+            <td style="padding: 14px 20px;">
+              <span class="role-badge" 
+                [class.role-apprentice]="u.role === 'APRENDIZ' || u.role === 'APPRENTICE'" 
+                [class.role-instructor]="u.role === 'INSTRUCTOR'" 
+                [class.role-admin]="u.role === 'ADMINISTRATOR'"
+                style="display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase;">
+                {{ u.role }}
+              </span>
+            </td>
+            <td style="padding: 14px 20px;">
+              <span class="rfid-uid-code" *ngIf="u.rfidUid" style="font-family: monospace; color: var(--gold); background: rgba(212,175,55,0.06); padding: 2px 6px; border-radius: 4px; font-size: 13px;">{{ u.rfidUid }}</span>
+              <span style="color: var(--text-soft); font-style: italic;" *ngIf="!u.rfidUid">Sin tarjeta</span>
+            </td>
+            <td style="padding: 14px 20px;" class="actions-cell">
+              <button class="btn btn-secondary btn-sm" (click)="openEditUser(u)" style="padding: 6px 12px; font-size: 12px; margin-right: 8px;">✏️ Editar</button>
+              <button class="btn btn-danger btn-sm" (click)="openDeleteConfirm(u)" style="padding: 6px 12px; font-size: 12px;">🗑️ Borrar</button>
+            </td>
+          </tr>
+          <tr *ngIf="pagedUsers.length === 0">
+            <td colspan="6" style="text-align: center; padding: 30px; color: var(--text-soft);">
+              No se encontraron usuarios registrados
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="pagination-controls" *ngIf="filteredUsers.length > pageSize" style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+      <span>Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, filteredUsers.length) }} de {{ filteredUsers.length }} usuarios</span>
+      <div class="pagination-btns" style="display: flex; gap: 8px;">
+        <button class="btn btn-secondary btn-sm" [disabled]="currentPage === 1" (click)="prevPage()">Anterior</button>
+        <button class="btn btn-secondary btn-sm" style="background: var(--gold); color: var(--gold-ink); border-color: var(--gold);" disabled>{{ currentPage }} / {{ totalPages }}</button>
+        <button class="btn btn-secondary btn-sm" [disabled]="currentPage === totalPages" (click)="nextPage()">Siguiente</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== CREATE INSTRUCTOR MODAL ===== -->
+  <div class="modal-overlay" *ngIf="showCreateInstructorModal">
+    <div class="modal-content animate-scale-in">
+      <div class="modal-header">
+        <h3>Crear Cuenta de Instructor</h3>
+        <button class="close-btn" (click)="closeCreateInstructor()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Nombre del Instructor</label>
+          <input type="text" [(ngModel)]="newInstName" placeholder="Ej. Carlos Mendoza">
+        </div>
+        <div class="form-group">
+          <label>Correo Electrónico</label>
+          <input type="email" [(ngModel)]="newInstEmail" placeholder="carlos@trainshier.com">
+        </div>
+        <div class="form-group">
+          <label>Contraseña Temporal</label>
+          <input type="password" [(ngModel)]="newInstPass" placeholder="Mínimo 6 caracteres">
+        </div>
+        <div class="form-group">
+          <label>RFID UID (Opcional)</label>
+          <input type="text" [(ngModel)]="newInstRfid" placeholder="Ej. 5678901234">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeCreateInstructor()">Cancelar</button>
+        <button class="btn btn-primary" (click)="saveInstructor()">Crear Instructor</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== EDIT USER MODAL ===== -->
+  <div class="modal-overlay" *ngIf="showEditUserModal">
+    <div class="modal-content animate-scale-in">
+      <div class="modal-header">
+        <h3>Editar Datos de Usuario</h3>
+        <button class="close-btn" (click)="closeEditUser()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Nombre Completo</label>
+          <input type="text" [(ngModel)]="editName" placeholder="Nombre completo">
+        </div>
+        <div class="form-group">
+          <label>Correo Electrónico</label>
+          <input type="email" [(ngModel)]="editEmail" placeholder="Correo electrónico">
+        </div>
+        <div class="form-group">
+          <label>Rol de Usuario</label>
+          <select [(ngModel)]="editRole">
+            <option value="APRENDIZ">Aprendiz</option>
+            <option value="INSTRUCTOR">Instructor</option>
+            <option value="ADMINISTRATOR">Administrador</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>RFID UID (Tarjeta)</label>
+          <input type="text" [(ngModel)]="editRfid" placeholder="Ej. 1029384756 (dejar vacío si no aplica)">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeEditUser()">Cancelar</button>
+        <button class="btn btn-primary" (click)="saveUserEdit()">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CONFIRM DELETE MODAL ===== -->
+  <div class="modal-overlay" *ngIf="showDeleteConfirm">
+    <div class="modal-content modal-danger animate-scale-in">
+      <div class="modal-header">
+        <h3>Confirmar Eliminación</h3>
+        <button class="close-btn" (click)="closeDeleteConfirm()">×</button>
+      </div>
+      <div class="modal-body">
+        <p>¿Estás seguro de que deseas eliminar al usuario <strong>{{ userToDelete?.name }}</strong>?</p>
+        <p style="color: #e15f41; font-weight: 500; font-size: 0.9rem; margin-top: 10px; line-height: 1.4;">
+          ⚠️ IMPORTANTE: Se ejecutará un disparador en cascada en la base de datos que borrará de forma segura todo su historial de simulaciones, calificaciones, reportes y accesos asociados para prevenir datos huérfanos. Esta acción no se puede deshacer.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeDeleteConfirm()">Cancelar</button>
+        <button class="btn btn-danger" (click)="confirmDelete()">Eliminar Permanentemente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CONFIRM TRUNCATE MODAL ===== -->
+  <div class="modal-overlay" *ngIf="showTruncateConfirm">
+    <div class="modal-content modal-danger animate-scale-in">
+      <div class="modal-header">
+        <h3>Reiniciar Base de Datos desde 0</h3>
+        <button class="close-btn" (click)="closeTruncateConfirm()">×</button>
+      </div>
+      <div class="modal-body">
+        <p>¿Estás seguro de que deseas reiniciar las tablas de entrenamiento de TrainShier?</p>
+        <p style="color: #e15f41; font-weight: 500; font-size: 0.9rem; margin-top: 10px; line-height: 1.4;">
+          ⚠️ Esto vaciará todas las transacciones, pagos, calificaciones de instructores y reportes de efectividad, reiniciando las secuencias de IDs desde 0.
+          Solo se conservarán las cuentas de los usuarios (aprendices, instructores, administradores).
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeTruncateConfirm()">Cancelar</button>
+        <button class="btn btn-danger" (click)="confirmTruncate()">Sí, Reiniciar Todo</button>
+      </div>
+    </div>
   </div>
 
 </div>

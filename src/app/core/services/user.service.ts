@@ -22,4 +22,24 @@ export class UserService {
   update(id: number, data: any): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/${id}`, data);
   }
+
+  createInstructor(data: any): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/instructors`, data);
+  }
+
+  updateAdmin(id: number, data: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}/admin`, data);
+  }
+
+  delete(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}`);
+  }
+
+  truncateData(): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/truncate`, {});
+  }
+
+  askAssistant(message: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/assistant/chat`, { message });
+  }
 }

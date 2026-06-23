@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild, ElementRef, AfterViewChecked, HostListener } from '@angular/core';
+import { UserService } from '../../../core/services/user.service';
 
 interface Message {
   sender: 'Asistente' | 'Tú';
@@ -29,7 +30,10 @@ export class SystemAssistantComponent implements OnInit, AfterViewChecked {
     { text: '¿Qué roles de usuario existen?', category: 'roles' }
   ];
 
-  constructor(private elementRef: ElementRef) {}
+  constructor(
+    private elementRef: ElementRef,
+    private userService: UserService
+  ) {}
 
   @HostListener('document:click', ['$event'])
   clickOut(event: MouseEvent): void {
@@ -78,17 +82,42 @@ export class SystemAssistantComponent implements OnInit, AfterViewChecked {
     this.isTyping = true;
     this.scrollToBottom();
 
-    // Simular un retraso en la respuesta del bot para sentirlo interactivo
-    setTimeout(() => {
-      this.isTyping = false;
-      const response = this.generateResponse(text);
-      this.messages.push({
-        sender: 'Asistente',
-        text: response,
-        timestamp: new Date()
-      });
-      this.scrollToBottom();
-    }, 700);
+    // Consultar al asistente virtual en el backend (Gemini con Notion Context)
+    this.userService.askAssistant(text).subscribe({
+      next: (res: any) => {
+        this.isTyping = false;
+        let cleanText = res.response || '';
+        
+        // Sanitizar y limpiar texto de comillas, asteriscos y emojis
+        cleanText = cleanText
+          .replace(/[\"*`]/g, '') // Quitar comillas dobles, asteriscos y backticks
+          .replace(/[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|[\u2011-\u26FF]|\uD83E[\uDD10-\uDDFF]/g, '') // Quitar emojis
+          .replace(/'/g, '') // Quitar comillas simples
+          .trim();
+
+        if (!cleanText) {
+          cleanText = 'Lo siento, no he podido generar una respuesta para tu consulta.';
+        }
+
+        this.messages.push({
+          sender: 'Asistente',
+          text: cleanText,
+          timestamp: new Date()
+        });
+        this.scrollToBottom();
+      },
+      error: (err: any) => {
+        this.isTyping = false;
+        // Fallback local en caso de que el backend falle o no tenga API Key
+        const fallback = this.generateResponse(text);
+        this.messages.push({
+          sender: 'Asistente',
+          text: fallback,
+          timestamp: new Date()
+        });
+        this.scrollToBottom();
+      }
+    });
   }
 
   selectSuggestion(suggestion: string): void {

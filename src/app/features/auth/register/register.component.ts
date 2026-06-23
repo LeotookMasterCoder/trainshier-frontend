@@ -8,6 +8,7 @@ import {
 import { Router } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
+import { UserService } from '../../../core/services/user.service';
 
 @Component({
   selector:'app-register',
@@ -24,10 +25,18 @@ export class RegisterComponent implements OnInit {
 
   darkMode:boolean = false;
 
+  trnVerified = false;
+  requestingCode = false;
+  instructors: any[] = [];
+  selectedInstructorId: number | null = null;
+  trnCodeInput = '';
+  generatedTrnCode = '';
+
   constructor(
     private fb:FormBuilder,
     private router:Router,
-    private authService:AuthService
+    private authService:AuthService,
+    private userService:UserService
   ){
 
     this.generateId();
@@ -36,6 +45,19 @@ export class RegisterComponent implements OnInit {
 
   ngOnInit(): void {
     this.darkMode = localStorage.getItem('theme') === 'dark';
+
+    // Cargar los instructores para el filtro
+    this.userService.getAll().subscribe({
+      next: (users) => {
+        this.instructors = users.filter(u => u.role === 'INSTRUCTOR' || u.role === 'instructor');
+        if (this.instructors.length > 0) {
+          this.selectedInstructorId = this.instructors[0].id;
+        }
+      },
+      error: (err) => {
+        console.error("Error al cargar instructores", err);
+      }
+    });
   }
 
   toggleTheme(): void {
@@ -162,6 +184,44 @@ export class RegisterComponent implements OnInit {
 
       });
 
+  }
+
+  pedirCodigo(): void {
+    if (!this.selectedInstructorId) {
+      this.errorMessage = 'Por favor selecciona un instructor';
+      return;
+    }
+    this.requestingCode = true;
+    this.errorMessage = '';
+    
+    // Simular retraso de envío de notificación al instructor
+    setTimeout(() => {
+      this.requestingCode = false;
+      const rand = Math.floor(1000 + Math.random() * 9000);
+      this.generatedTrnCode = `TRN-${rand}`;
+    }, 1200);
+  }
+
+  copiarCodigo(): void {
+    this.trnCodeInput = this.generatedTrnCode;
+  }
+
+  verificarCodigo(): void {
+    this.errorMessage = '';
+    if (!this.trnCodeInput) {
+      this.errorMessage = 'Por favor ingresa el código TRN de autorización';
+      return;
+    }
+
+    if (this.trnCodeInput.trim().toUpperCase() === this.generatedTrnCode) {
+      this.trnVerified = true;
+      this.successMessage = 'Código TRN validado con éxito. Ahora puedes completar tu registro.';
+      setTimeout(() => {
+        this.successMessage = '';
+      }, 3000);
+    } else {
+      this.errorMessage = 'El código TRN ingresado no coincide o es inválido.';
+    }
   }
 
   back():void{
