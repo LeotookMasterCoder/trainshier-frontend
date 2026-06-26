@@ -1,301 +1,226 @@
 <div class="instructor-page">
+
+  <!-- HEADER -->
   <div class="header-card">
-
     <div>
-
-      <h1>
-        Centro de Evaluación
-      </h1>
-
-      <p>
-        Analiza el desempeño de los aprendices y genera retroalimentación profesional.
-      </p>
-
+      <h1>Centro de Evaluación</h1>
+      <p>Analiza el desempeño de los aprendices y genera retroalimentación profesional.</p>
     </div>
-
-    <button class="export-btn">
-      Exportar Evaluación
-    </button>
-
+    <button class="export-btn" (click)="exportEvaluation()">Exportar Evaluación</button>
   </div>
 
+  <!-- KPI CARDS — datos reales de la BD -->
   <div class="kpi-grid">
 
     <div class="kpi-card">
-
-      <h2>{{ puntaje }}%</h2>
-
-      <span>
-        Rendimiento
-      </span>
-
+      <h2>{{ getAverageScore() }}%</h2>
+      <span>Rendimiento Promedio</span>
     </div>
 
     <div class="kpi-card">
-
-      <h2>{{ tiempo }}</h2>
-
-      <span>
-        Minutos
-      </span>
-
-    </div>
-
-    <div class="kpi-card">
-
-      <h2>{{ errores }}</h2>
-
-      <span>
-        Errores
-      </span>
-
-    </div>
-
-    <div class="kpi-card">
-
       <h2>{{ comments.length }}</h2>
+      <span>Evaluaciones</span>
+    </div>
 
-      <span>
-        Evaluaciones
-      </span>
+    <div class="kpi-card">
+      <h2>{{ getApprovedCount() }}</h2>
+      <span>Aprobados</span>
+    </div>
 
+    <div class="kpi-card">
+      <h2>{{ getRejectedCount() }}</h2>
+      <span>No Aprobados</span>
     </div>
 
   </div>
 
-  <div class="student-card">
+  <!-- RESUMEN — si hay evaluaciones -->
+  <div class="student-card" *ngIf="comments.length > 0; else noEvals">
 
     <div>
-
       <div class="student-info">
-
-        <h2>
-          {{ nombreAprendiz }}
-        </h2>
-
+        <h2>Desempeño General del Grupo</h2>
         <span
-          [class.approved]="puntaje >= 70"
-          [class.rejected]="puntaje < 70">
-
-          {{ puntaje >= 70 ? 'APROBADO' : 'NO APROBADO' }}
-
+          [class.approved]="getAverageScore() >= 70"
+          [class.rejected]="getAverageScore() < 70">
+          {{ getAverageScore() >= 70 ? 'RENDIMIENTO APROBADO' : 'REQUIERE REFUERZO' }}
         </span>
-
       </div>
 
       <div class="progress-section">
-
         <div class="progress-header">
-
-          <span>
-            Desempeño General
-          </span>
-
-          <strong>
-            {{ puntaje }}%
-          </strong>
-
+          <span>Promedio General</span>
+          <strong>{{ getAverageScore() }}%</strong>
         </div>
-
         <div class="progress-bar">
-
-          <div
-            class="progress-fill"
-            [style.width.%]="puntaje">
-          </div>
-
+          <div class="progress-fill" [style.width.%]="getAverageScore()"></div>
         </div>
-
       </div>
 
       <div class="metrics">
-
         <div class="metric">
-
-          <h3>Puntaje</h3>
-
-          <p>{{ puntaje }}%</p>
-
+          <h3>Promedio</h3>
+          <p>{{ getAverageScore() }}%</p>
         </div>
-
         <div class="metric">
-
-          <h3>Tiempo</h3>
-
-          <p>{{ tiempo }} min</p>
-
+          <h3>Aprobados</h3>
+          <p>{{ getApprovedCount() }}</p>
         </div>
-
         <div class="metric">
-
-          <h3>Errores</h3>
-
-          <p>{{ errores }}</p>
-
+          <h3>No Aprobados</h3>
+          <p>{{ getRejectedCount() }}</p>
         </div>
-
       </div>
-
     </div>
 
     <div class="chart-box">
-
       <div class="chart-circle">
-
         <div class="inner-circle">
-
-          {{ puntaje }}%
-
+          {{ getAverageScore() }}%
         </div>
-
       </div>
-
     </div>
 
   </div>
 
+  <!-- EMPTY STATE si no hay evaluaciones -->
+  <ng-template #noEvals>
+    <div class="student-card" style="text-align: center; justify-content: center; padding: 40px; color: var(--text-soft);">
+      <div style="font-size: 3rem; margin-bottom: 15px;">📋</div>
+      <h3 style="color: var(--text); margin-bottom: 10px;">Sin evaluaciones registradas</h3>
+      <p>Cuando completes la primera evaluación de un aprendiz, aquí aparecerán las métricas de desempeño del grupo.</p>
+    </div>
+  </ng-template>
+
+  <!-- ANÁLISIS INTELIGENTE -->
   <div class="ai-card">
-
-    <h2>
-      Análisis Inteligente
-    </h2>
-
-    <p>
-
-      {{ aiAnalysis }}
-
+    <h2>Análisis Inteligente</h2>
+    <p *ngIf="comments.length === 0; else analysisText">
+      Aún no hay evaluaciones registradas. Usa el formulario de abajo para calificar a los aprendices y obtener el análisis automático.
     </p>
-
+    <ng-template #analysisText>
+      <p *ngIf="getAverageScore() >= 90">
+        El rendimiento general es excelente. Los aprendices dominan los procesos de caja, descuentos y atención al cliente. Se recomienda continuar con módulos avanzados.
+      </p>
+      <p *ngIf="getAverageScore() >= 70 && getAverageScore() < 90">
+        El rendimiento es bueno. Se observan oportunidades de mejora en tiempos de atención y manejo de descuentos. Se recomienda reforzar los puntos débiles identificados.
+      </p>
+      <p *ngIf="getAverageScore() < 70">
+        El desempeño requiere acompañamiento adicional. Se recomienda reforzar los fundamentos del sistema POS y realizar más simulaciones prácticas antes de la evaluación final.
+      </p>
+    </ng-template>
   </div>
 
+  <!-- FORMULARIO DE NUEVA RETROALIMENTACIÓN -->
   <div class="comments-container">
 
-    <h2>
-      Nueva Retroalimentación
-    </h2>
+    <h2>Nueva Retroalimentación</h2>
 
     <form (ngSubmit)="saveComment()">
 
       <input
         type="text"
-        placeholder="Nombre del aprendiz"
+        placeholder="Nombre del aprendiz *"
         [(ngModel)]="comment.studentName"
         name="studentName">
 
       <input
         type="text"
-        placeholder="Módulo evaluado"
+        placeholder="Módulo evaluado (ej. Caja POS) *"
         [(ngModel)]="comment.module"
         name="module">
 
       <input
         type="number"
-        placeholder="Calificación final"
+        placeholder="Calificación final (0-100) *"
         [(ngModel)]="comment.score"
-        name="score">
+        name="score"
+        min="0"
+        max="100">
 
-      <select
-        [(ngModel)]="comment.state"
-        name="state">
-
-        <option value="">
-          Estado
-        </option>
-
-        <option value="Aprobado">
-          Aprobado
-        </option>
-
-        <option value="No aprobado">
-          No aprobado
-        </option>
-
+      <select [(ngModel)]="comment.state" name="state">
+        <option value="">Estado *</option>
+        <option value="Aprobado">Aprobado</option>
+        <option value="No aprobado">No aprobado</option>
       </select>
 
       <textarea
         rows="4"
-        placeholder="Retroalimentación"
+        placeholder="Retroalimentación constructiva *"
         [(ngModel)]="comment.feedback"
         name="feedback">
       </textarea>
 
       <textarea
-        rows="4"
-        placeholder="Errores detectados"
+        rows="3"
+        placeholder="Errores detectados (opcional)"
         [(ngModel)]="comment.errors"
         name="errors">
       </textarea>
 
       <button type="submit">
-
         Guardar Evaluación
-
       </button>
 
     </form>
 
-    <div
-      class="notification"
-      *ngIf="notification">
-
+    <div class="notification" *ngIf="notification">
       {{ notification }}
-
     </div>
 
   </div>
 
+  <!-- HISTORIAL DE EVALUACIONES -->
   <div class="history-card">
 
     <div class="history-header">
-
-      <h2>
-        Historial de Evaluaciones
-      </h2>
-
-      <input
-        type="text"
-        placeholder="Buscar aprendiz..."
-      >
-
+      <h2>Historial de Evaluaciones</h2>
+      <input type="text" placeholder="Buscar aprendiz...">
     </div>
 
-    <div class="comments-list">
+    <!-- Loading -->
+    <div *ngIf="loading" style="text-align: center; padding: 30px; color: var(--text-soft);">
+      Cargando evaluaciones...
+    </div>
 
+    <div class="comments-list" *ngIf="!loading">
+
+      <!-- Empty state -->
+      <div *ngIf="comments.length === 0" style="text-align: center; padding: 40px; color: var(--text-soft);">
+        <p>No hay evaluaciones registradas aún.</p>
+        <p style="font-size: 0.85rem; margin-top: 8px;">Usa el formulario de arriba para calificar a los aprendices.</p>
+      </div>
+
+      <!-- Lista de evaluaciones reales -->
       <div
         class="comment-card"
-        *ngFor="let item of comments">
+        *ngFor="let item of comments; let i = index">
 
         <div class="card-top">
-
-          <h2>
-            {{ item.studentName }}
-          </h2>
-
-          <span>
+          <h2>{{ item.studentName }}</h2>
+          <span [style.color]="item.state === 'Aprobado' ? '#2ecc71' : '#ef4444'"
+                [style.background]="item.state === 'Aprobado' ? 'rgba(46,204,113,0.1)' : 'rgba(239,68,68,0.1)'"
+                style="padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700;">
             {{ item.state }}
           </span>
-
         </div>
 
-        <p>
-          <strong>Módulo:</strong>
-          {{ item.module }}
+        <p><strong>Módulo:</strong> {{ item.module }}</p>
+        <p><strong>Calificación:</strong> {{ item.score }} / 100</p>
+        <p><strong>Retroalimentación:</strong> {{ item.feedback }}</p>
+        <p *ngIf="item.errors && item.errors !== '0'">
+          <strong>Errores:</strong> {{ item.errors }}
+        </p>
+        <p style="font-size: 0.78rem; color: var(--text-soft); margin-top: 8px;">
+          Fecha: {{ item.date }}
         </p>
 
-        <p>
-          <strong>Calificación:</strong>
-          {{ item.score }}
-        </p>
-
-        <p>
-          <strong>Retroalimentación:</strong>
-          {{ item.feedback }}
-        </p>
-
-        <p>
-          <strong>Errores:</strong>
-          {{ item.errors }}
-        </p>
+        <button
+          type="button"
+          (click)="deleteComment(i)"
+          style="margin-top: 10px; background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid #ef4444; border-radius: 6px; padding: 5px 12px; font-size: 12px; cursor: pointer;">
+          🗑 Eliminar
+        </button>
 
       </div>
 
