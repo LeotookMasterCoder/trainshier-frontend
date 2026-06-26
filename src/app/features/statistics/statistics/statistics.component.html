@@ -4,6 +4,7 @@
   <div class="tabs-header" *ngIf="isAdmin" style="display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
     <button class="tab-btn" (click)="changeTab('stats')" style="background: none; border: none; font-size: 1.1rem; padding: 5px 15px; cursor: pointer; color: var(--text); border-bottom: 2px solid transparent; outline: none; transition: all 0.3s; font-family: var(--font-display);" [style.border-bottom-color]="currentTab === 'stats' ? 'var(--gold)' : 'transparent'" [style.color]="currentTab === 'stats' ? 'var(--gold)' : 'var(--text-soft)'">📊 Estadísticas</button>
     <button class="tab-btn" (click)="changeTab('users')" style="background: none; border: none; font-size: 1.1rem; padding: 5px 15px; cursor: pointer; color: var(--text); border-bottom: 2px solid transparent; outline: none; transition: all 0.3s; font-family: var(--font-display);" [style.border-bottom-color]="currentTab === 'users' ? 'var(--gold)' : 'transparent'" [style.color]="currentTab === 'users' ? 'var(--gold)' : 'var(--text-soft)'">👥 Gestión de Usuarios</button>
+    <button class="tab-btn" (click)="changeTab('rfid')" style="background: none; border: none; font-size: 1.1rem; padding: 5px 15px; cursor: pointer; color: var(--text); border-bottom: 2px solid transparent; outline: none; transition: all 0.3s; font-family: var(--font-display);" [style.border-bottom-color]="currentTab === 'rfid' ? 'var(--gold)' : 'transparent'" [style.color]="currentTab === 'rfid' ? 'var(--gold)' : 'var(--text-soft)'">📡 Peticiones RFID</button>
   </div>
 
   <div *ngIf="currentTab === 'stats'" class="animate-fade-in">
@@ -210,8 +211,8 @@
         >
       </div>
       <div class="header-actions" style="display: flex; gap: 12px;">
-        <button class="btn btn-primary" (click)="openCreateInstructor()">
-          <span>➕ Crear Instructor</span>
+        <button class="btn btn-primary" (click)="openCreateUser()">
+          <span>➕ Crear Usuario</span>
         </button>
         <button class="btn btn-danger" (click)="openTruncateConfirm()">
           <span>🔄 Reiniciar Tablas</span>
@@ -228,6 +229,7 @@
             <th style="padding: 14px 20px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; color: var(--accent);">Nombre</th>
             <th style="padding: 14px 20px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; color: var(--accent);">Correo</th>
             <th style="padding: 14px 20px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; color: var(--accent);">Rol</th>
+            <th style="padding: 14px 20px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; color: var(--accent);">Estado</th>
             <th style="padding: 14px 20px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; color: var(--accent);">RFID UID</th>
             <th style="padding: 14px 20px; text-align: left; font-weight: 600; font-size: 13px; text-transform: uppercase; color: var(--accent);">Acciones</th>
           </tr>
@@ -238,12 +240,17 @@
             <td style="padding: 14px 20px; font-weight: 500;">{{ u.name }}</td>
             <td style="padding: 14px 20px; color: var(--text-soft);">{{ u.email }}</td>
             <td style="padding: 14px 20px;">
-              <span class="role-badge" 
-                [class.role-apprentice]="u.role === 'APRENDIZ' || u.role === 'APPRENTICE'" 
-                [class.role-instructor]="u.role === 'INSTRUCTOR'" 
+              <span class="role-badge"
+                [class.role-apprentice]="u.role === 'APPRENTICE'"
+                [class.role-instructor]="u.role === 'INSTRUCTOR'"
                 [class.role-admin]="u.role === 'ADMINISTRATOR'"
                 style="display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase;">
                 {{ u.role }}
+              </span>
+            </td>
+            <td style="padding: 14px 20px;">
+              <span [style.color]="u.active !== false ? '#2ecc71' : '#e15f41'" style="font-weight: 600; font-size: 13px;">
+                {{ u.active !== false ? 'Activo' : 'Inactivo' }}
               </span>
             </td>
             <td style="padding: 14px 20px;">
@@ -251,8 +258,11 @@
               <span style="color: var(--text-soft); font-style: italic;" *ngIf="!u.rfidUid">Sin tarjeta</span>
             </td>
             <td style="padding: 14px 20px;" class="actions-cell">
-              <button class="btn btn-secondary btn-sm" (click)="openEditUser(u)" style="padding: 6px 12px; font-size: 12px; margin-right: 8px;">✏️ Editar</button>
-              <button class="btn btn-danger btn-sm" (click)="openDeleteConfirm(u)" style="padding: 6px 12px; font-size: 12px;">🗑️ Borrar</button>
+              <button class="btn btn-secondary btn-sm" (click)="openEditUser(u)" style="padding: 6px 10px; font-size: 11px; margin-right: 6px;">✏️ Editar</button>
+              <button class="btn btn-sm" (click)="toggleActive(u)" [style.background]="u.active !== false ? 'rgba(225,95,65,0.15)' : 'rgba(46,204,113,0.15)'" [style.color]="u.active !== false ? '#e15f41' : '#2ecc71'" style="padding: 6px 10px; font-size: 11px; border: 1px solid; border-radius: 4px; cursor: pointer; margin-right: 6px;">
+                {{ u.active !== false ? '⏸ Desactivar' : '▶ Activar' }}
+              </button>
+              <button class="btn btn-danger btn-sm" (click)="openDeleteConfirm(u)" style="padding: 6px 10px; font-size: 11px;">🗑️ Borrar</button>
             </td>
           </tr>
           <tr *ngIf="pagedUsers.length === 0">
@@ -276,35 +286,85 @@
 
   </div>
 
-  <!-- ===== CREATE INSTRUCTOR MODAL ===== -->
-  <div class="modal-overlay" *ngIf="showCreateInstructorModal">
+  <!-- ===== CREATE ANY USER MODAL ===== -->
+  <div class="modal-overlay" *ngIf="showCreateUserModal">
     <div class="modal-content animate-scale-in">
       <div class="modal-header">
-        <h3>Crear Cuenta de Instructor</h3>
-        <button class="close-btn" (click)="closeCreateInstructor()">×</button>
+        <h3>Crear Nuevo Usuario</h3>
+        <button class="close-btn" (click)="closeCreateUser()">×</button>
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label>Nombre del Instructor</label>
-          <input type="text" [(ngModel)]="newInstName" placeholder="Ej. Carlos Mendoza">
+          <label>Rol del Usuario</label>
+          <select [(ngModel)]="newUserRole">
+            <option value="INSTRUCTOR">Instructor</option>
+            <option value="ADMINISTRATOR">Administrador</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nombre Completo</label>
+          <input type="text" [(ngModel)]="newUserName" placeholder="Ej. Ana García">
         </div>
         <div class="form-group">
           <label>Correo Electrónico</label>
-          <input type="email" [(ngModel)]="newInstEmail" placeholder="carlos@trainshier.com">
+          <input type="email" [(ngModel)]="newUserEmail" placeholder="ana@trainshier.com">
         </div>
         <div class="form-group">
           <label>Contraseña Temporal</label>
-          <input type="password" [(ngModel)]="newInstPass" placeholder="Mínimo 6 caracteres">
+          <input type="password" [(ngModel)]="newUserPass" placeholder="Mínimo 6 caracteres">
         </div>
         <div class="form-group">
           <label>RFID UID (Opcional)</label>
-          <input type="text" [(ngModel)]="newInstRfid" placeholder="Ej. 5678901234">
+          <input type="text" [(ngModel)]="newUserRfid" placeholder="Ej. 5678901234">
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closeCreateInstructor()">Cancelar</button>
-        <button class="btn btn-primary" (click)="saveInstructor()">Crear Instructor</button>
+        <button class="btn btn-secondary" (click)="closeCreateUser()">Cancelar</button>
+        <button class="btn btn-primary" (click)="saveNewUser()">Crear Usuario</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ===== RFID REQUESTS TAB ===== -->
+  <div *ngIf="currentTab === 'rfid' && isAdmin" class="user-management-panel animate-fade-in">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2 style="font-size: 1.4rem; font-weight: 700;">Peticiones de Tarjeta RFID</h2>
+      <button class="btn btn-secondary" (click)="loadRfidRequests()" style="padding: 8px 16px; font-size: 13px;">🔄 Actualizar</button>
+    </div>
+    <div *ngIf="rfidLoading" style="text-align: center; padding: 40px; color: var(--text-soft);">Cargando peticiones...</div>
+    <div *ngIf="!rfidLoading && rfidRequests.length === 0" style="text-align: center; padding: 40px; color: var(--text-soft);">
+      <p style="font-size: 1.2rem;">📡</p>
+      <p>No hay peticiones de RFID pendientes.</p>
+    </div>
+    <div class="table-container" *ngIf="!rfidLoading && rfidRequests.length > 0" style="width: 100%; overflow-x: auto; border-radius: var(--r-sm); border: 1px solid var(--border-soft);">
+      <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr style="background: var(--surface-2); border-bottom: 1px solid var(--border-soft);">
+            <th style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--accent);">Usuario</th>
+            <th style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--accent);">RFID UID</th>
+            <th style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--accent);">Estado</th>
+            <th style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--accent);">Fecha</th>
+            <th style="padding: 12px 16px; text-align: left; font-size: 12px; text-transform: uppercase; color: var(--accent);">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let req of rfidRequests" style="border-bottom: 1px solid var(--border-soft);">
+            <td style="padding: 12px 16px;">{{ req.user?.name || '—' }}</td>
+            <td style="padding: 12px 16px; font-family: monospace; color: var(--gold);">{{ req.rfidUid }}</td>
+            <td style="padding: 12px 16px;">
+              <span [style.color]="req.status === 'pending' ? '#d97706' : req.status === 'approved' ? '#2ecc71' : '#e15f41'" style="font-weight: 600; text-transform: capitalize;">{{ req.status }}</span>
+            </td>
+            <td style="padding: 12px 16px; color: var(--text-soft); font-size: 13px;">{{ req.requestedAt | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td style="padding: 12px 16px;">
+              <ng-container *ngIf="req.status === 'pending'">
+                <button class="btn btn-sm" (click)="approveRfid(req)" style="background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid #2ecc71; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-right: 6px; font-size: 12px;">✅ Aprobar</button>
+                <button class="btn btn-sm" (click)="rejectRfid(req)" style="background: rgba(225,95,65,0.15); color: #e15f41; border: 1px solid #e15f41; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">❌ Rechazar</button>
+              </ng-container>
+              <span *ngIf="req.status !== 'pending'" style="color: var(--text-soft); font-style: italic; font-size: 12px;">Ya procesada</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -327,7 +387,7 @@
         <div class="form-group">
           <label>Rol de Usuario</label>
           <select [(ngModel)]="editRole">
-            <option value="APRENDIZ">Aprendiz</option>
+            <option value="APPRENTICE">Aprendiz</option>
             <option value="INSTRUCTOR">Instructor</option>
             <option value="ADMINISTRATOR">Administrador</option>
           </select>

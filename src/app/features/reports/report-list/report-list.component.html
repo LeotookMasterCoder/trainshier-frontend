@@ -1,410 +1,179 @@
 <div class="reports-container">
 
+  <!-- HEADER -->
   <div class="header">
-
     <div>
-
-      <h1>
-        Centro de Reportes
-      </h1>
-
-      <p>
-        Analiza el rendimiento general de TrainShier
-      </p>
-
+      <h1>Centro de Reportes</h1>
+      <p>Analiza el rendimiento general de TrainShier</p>
     </div>
-
-    <button class="export-btn">
-      Exportar PDF
-    </button>
-
+    <button class="export-btn" (click)="exportPDF()">Exportar PDF</button>
   </div>
 
-  <div class="kpi-grid">
-
-    <div class="kpi-card">
-
-      <h2>
-        {{ totalUsers }}
-      </h2>
-
-      <span>
-        Usuarios Registrados
-      </span>
-
-    </div>
-
-    <div class="kpi-card">
-
-      <h2>
-        {{ totalTransactions }}
-      </h2>
-
-      <span>
-        Transacciones
-      </span>
-
-    </div>
-
-    <div class="kpi-card">
-
-      <h2>
-        {{ totalSimulations }}
-      </h2>
-
-      <span>
-        Simulaciones
-      </span>
-
-    </div>
-
-    <div class="kpi-card">
-
-      <h2>
-        {{ averageScore }}%
-      </h2>
-
-      <span>
-        Efectividad General
-      </span>
-
-    </div>
-
-    <div class="kpi-card">
-
-      <h2>
-        98
-      </h2>
-
-      <span>
-        Clientes Atendidos
-      </span>
-
-    </div>
-
-    <div class="kpi-card">
-
-      <h2>
-        15
-      </h2>
-
-      <span>
-        Productos Activos
-      </span>
-
-    </div>
-
-    <div class="kpi-card">
-
-      <h2>
-        7
-      </h2>
-
-      <span>
-        Instructores
-      </span>
-
-    </div>
-
-    <div class="kpi-card">
-
-      <h2>
-        1.8 min
-      </h2>
-
-      <span>
-        Tiempo Promedio
-      </span>
-
-    </div>
-
+  <!-- LOADING -->
+  <div class="empty-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando datos...</p>
   </div>
 
-  <div class="filters-card">
+  <ng-container *ngIf="!loading">
 
-    <h2>
-      Filtros
-    </h2>
+    <!-- KPI GRID -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <h2>{{ totalUsers }}</h2>
+        <span>Usuarios Registrados</span>
+      </div>
+      <div class="kpi-card">
+        <h2>{{ totalTransactions }}</h2>
+        <span>Transacciones</span>
+      </div>
+      <div class="kpi-card">
+        <h2>{{ totalSimulations }}</h2>
+        <span>Simulaciones</span>
+      </div>
+      <div class="kpi-card">
+        <h2>{{ averageScore }}%</h2>
+        <span>Efectividad General</span>
+      </div>
+      <div class="kpi-card">
+        <h2>{{ totalClientsServed }}</h2>
+        <span>Clientes Atendidos</span>
+      </div>
+      <div class="kpi-card">
+        <h2>{{ activeProducts }}</h2>
+        <span>Productos Activos</span>
+      </div>
+      <div class="kpi-card">
+        <h2>{{ totalErrors }}</h2>
+        <span>Errores Totales</span>
+      </div>
+      <div class="kpi-card">
+        <h2>${{ averageTicket | number }}</h2>
+        <span>Ticket Promedio</span>
+      </div>
+    </div>
 
-    <div class="filters-grid">
+    <!-- FILTROS -->
+    <div class="filters-card">
+      <h2>Filtros</h2>
+      <div class="filters-grid">
+        <div>
+          <label>Fecha Inicial</label>
+          <input type="date" [(ngModel)]="startDate">
+        </div>
+        <div>
+          <label>Fecha Final</label>
+          <input type="date" [(ngModel)]="endDate">
+        </div>
+        <div>
+          <label>Rol</label>
+          <select [(ngModel)]="selectedRole">
+            <option value="TODOS">Todos</option>
+            <option value="APPRENTICE">Aprendiz</option>
+            <option value="INSTRUCTOR">Instructor</option>
+            <option value="ADMINISTRATOR">Administrador</option>
+          </select>
+        </div>
+        <button class="filter-btn" (click)="applyFilters()">
+          Filtrar Información
+        </button>
+      </div>
+    </div>
 
-      <div>
+    <!-- CHARTS (solo si hay simulaciones) -->
+    <div class="charts-grid" *ngIf="totalSimulations > 0; else noSimulations">
+      <div class="chart-card">
+        <h2>Efectividad General</h2>
+        <canvas #effectivenessChart width="300" height="300"></canvas>
+      </div>
+      <div class="chart-card">
+        <h2>Productos del Catálogo</h2>
+        <canvas #topProductsChart width="400" height="300"></canvas>
+      </div>
+    </div>
 
-        <label>
-          Fecha Inicial
-        </label>
+    <ng-template #noSimulations>
+      <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <h3>Sin datos de simulaciones</h3>
+        <p>Cuando los aprendices completen sus primeras simulaciones, aquí aparecerán las gráficas de rendimiento.</p>
+      </div>
+    </ng-template>
 
-        <input
-          type="date"
-          [(ngModel)]="startDate"
-        >
-
+    <!-- TOP RANKINGS -->
+    <div class="analytics-grid">
+      <div class="ranking-card">
+        <h2>Top Aprendices por Efectividad</h2>
+        <ng-container *ngIf="topUsers.length > 0; else noTopUsers">
+          <div class="ranking-item" *ngFor="let user of topUsers">
+            <span>{{ user.name }}</span>
+            <strong>{{ user.effectiveness }}%</strong>
+          </div>
+        </ng-container>
+        <ng-template #noTopUsers>
+          <p class="empty-inline">Aún no hay evaluaciones registradas.</p>
+        </ng-template>
       </div>
 
-      <div>
-
-        <label>
-          Fecha Final
-        </label>
-
-        <input
-          type="date"
-          [(ngModel)]="endDate"
-        >
-
+      <div class="ranking-card">
+        <h2>Catálogo de Productos</h2>
+        <ng-container *ngIf="topProducts.length > 0; else noProducts">
+          <div class="ranking-item" *ngFor="let product of topProducts">
+            <span>{{ product.name }}</span>
+            <strong>{{ product.sales || 'Disponible' }}</strong>
+          </div>
+        </ng-container>
+        <ng-template #noProducts>
+          <p class="empty-inline">Sin productos en el catálogo.</p>
+        </ng-template>
       </div>
+    </div>
 
-      <div>
-
-        <label>
-          Rol
-        </label>
-
-        <select
-          [(ngModel)]="selectedRole"
-        >
-
-          <option value="TODOS">
-            Todos
-          </option>
-
-          <option value="APRENDIZ">
-            Aprendiz
-          </option>
-
-          <option value="INSTRUCTOR">
-            Instructor
-          </option>
-
-          <option value="ADMIN">
-            Administrador
-          </option>
-
-        </select>
-
+    <!-- TABLA DE ACTIVIDAD -->
+    <div class="table-section">
+      <div class="table-header">
+        <h2>Actividad de Usuarios</h2>
+        <button class="export-btn" (click)="exportPDF()">Exportar</button>
       </div>
-
-      <button
-        class="filter-btn"
-        (click)="applyFilters()"
-      >
-        Filtrar Información
-      </button>
-
-    </div>
-
-  </div>
-
-  <div class="charts-grid">
-
-    <div class="chart-card">
-
-      <h2>
-        Simulaciones por Mes
-      </h2>
-
-      <div class="chart-placeholder">
-
-        Gráfico Chart.js
-
+      <div class="table-container">
+        <ng-container *ngIf="users.length > 0; else noUsers">
+          <table>
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Simulaciones</th>
+                <th>Efectividad</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of users">
+                <td>{{ user.name }}</td>
+                <td>{{ user.role }}</td>
+                <td>{{ user.simulations }}</td>
+                <td>{{ user.simulations > 0 ? user.effectiveness + '%' : '—' }}</td>
+                <td>
+                  <span [class]="user.active ? 'badge-active' : 'badge-inactive'">
+                    {{ user.active ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </ng-container>
+        <ng-template #noUsers>
+          <p class="empty-inline">No hay usuarios que mostrar.</p>
+        </ng-template>
       </div>
-
     </div>
 
-    <div class="chart-card">
-
-      <h2>
-        Rendimiento General
-      </h2>
-
-      <div class="chart-placeholder">
-
-        Gráfico Chart.js
-
-      </div>
-
+    <!-- AI ANÁLISIS -->
+    <div class="ai-card">
+      <h2>🤖 Análisis Inteligente</h2>
+      <p>{{ aiReport }}</p>
     </div>
 
-  </div>
-
-  <div class="analytics-grid">
-
-    <div class="ranking-card">
-
-      <h2>
-        Top Aprendices
-      </h2>
-
-      <div
-        class="ranking-item"
-        *ngFor="let user of topUsers"
-      >
-
-        <span>
-          {{ user.name }}
-        </span>
-
-        <strong>
-          {{ user.effectiveness }}%
-        </strong>
-
-      </div>
-
-    </div>
-
-    <div class="ranking-card">
-
-      <h2>
-        Productos Más Vendidos
-      </h2>
-
-      <div
-        class="ranking-item"
-        *ngFor="let product of topProducts"
-      >
-
-        <span>
-          {{ product.name }}
-        </span>
-
-        <strong>
-          {{ product.sales }}
-        </strong>
-
-      </div>
-
-    </div>
-
-  </div>
-  <div class="ranking-card">
-
-    <h2>
-      Errores Más Frecuentes
-    </h2>
-
-    <div class="ranking-item">
-
-      <span>
-        Cambio incorrecto
-      </span>
-
-      <strong>
-        42
-      </strong>
-
-    </div>
-
-    <div class="ranking-item">
-
-      <span>
-        Producto equivocado
-      </span>
-
-      <strong>
-        30
-      </strong>
-
-    </div>
-
-    <div class="ranking-item">
-
-      <span>
-        Precio incorrecto
-      </span>
-
-      <strong>
-        19
-      </strong>
-
-    </div>
-
-    <div class="ranking-item">
-
-      <span>
-        Descuento mal aplicado
-      </span>
-
-      <strong>
-        11
-      </strong>
-
-    </div>
-
-  </div>
-
-  <div class="table-section">
-
-    <div class="table-header">
-
-      <h2>
-        Actividad Reciente
-      </h2>
-
-      <button class="export-btn">
-        Exportar Excel
-      </button>
-
-    </div>
-
-    <div class="table-container">
-
-      <table>
-
-        <thead>
-
-        <tr>
-
-          <th>Usuario</th>
-          <th>Rol</th>
-          <th>Simulaciones</th>
-          <th>Efectividad</th>
-
-        </tr>
-
-        </thead>
-
-        <tbody>
-
-        <tr *ngFor="let user of users">
-
-          <td>
-            {{ user.name }}
-          </td>
-
-          <td>
-            {{ user.role }}
-          </td>
-
-          <td>
-            {{ user.simulations }}
-          </td>
-
-          <td>
-            {{ user.effectiveness }}%
-          </td>
-
-        </tr>
-
-        </tbody>
-
-      </table>
-
-    </div>
-
-  </div>
-
-  <div class="ai-card">
-
-    <h2>
-       Análisis Inteligente
-    </h2>
-
-    <p>
-
-      {{ aiReport }}
-
-    </p>
-
-  </div>
+  </ng-container>
 
 </div>

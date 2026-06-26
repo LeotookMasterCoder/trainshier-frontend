@@ -1,40 +1,52 @@
-import { Component, ViewChild, OnInit } from '@angular/core';
+import {
+  Component, ViewChild, OnInit, OnDestroy, ElementRef
+} from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TransactionService } from '../../../core/services/transaction.service';
 import { ReportService } from '../../../core/services/report.service';
 import { CommentService } from '../../../core/services/comment.service';
+import { ProductService } from '../../../core/services/product.service';
 import { TransactionListComponent } from '../transaction-list/transaction-list.component';
+// ZXing — barcode scanner (compatible with @zxing/library@0.21.3 + @zxing/browser@0.1.4)
+import { BrowserMultiFormatReader } from '@zxing/browser';
 
 @Component({
   selector: 'app-transaction-form',
   templateUrl: './transaction-form.component.html',
   styleUrls: ['./transaction-form.component.scss']
 })
-export class TransactionFormComponent implements OnInit {
+export class TransactionFormComponent implements OnInit, OnDestroy {
   @ViewChild(TransactionListComponent) listComponent?: TransactionListComponent;
+  @ViewChild('videoElement') videoRef!: ElementRef<HTMLVideoElement>;
 
   form: FormGroup;
   successMessage: string = '';
   errorMessage: string = '';
 
-  // Roles y visualización para el Aprendiz
   role: string = '';
   userName: string = '';
   userId: number = 0;
 
   userReports: any[] = [];
   userEvaluations: any[] = [];
-
-  // Estadísticas del Aprendiz
   averageScore: number = 0;
   totalSimulations: number = 0;
   approvedCount: number = 0;
+
+  // ZXing barcode scanner
+  codeReader: BrowserMultiFormatReader | null = null;
+  scannerActive: boolean = false;
+  scannerLoading: boolean = false;
+  scannedCode: string = '';
+  scannedProduct: any = null;
+  allProducts: any[] = [];
 
   constructor(
     private fb: FormBuilder,
     private transactionService: TransactionService,
     private reportService: ReportService,
-    private commentService: CommentService
+    private commentService: CommentService,
+    private productService: ProductService
   ) {
     this.form = this.fb.group({
       product: ['', Validators.required],
@@ -44,143 +56,195 @@ export class TransactionFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.role = localStorage.getItem('role') || 'APRENDIZ';
-    this.userName = localStorage.getItem('name') || 'Aprendiz';
+    this.role = localStorage.getItem('role') || '';
+    this.userName = localStorage.getItem('name') || '';
     this.userId = Number(localStorage.getItem('userId')) || 0;
 
-    if (this.role === 'APRENDIZ') {
+    // Load products for barcode lookup
+    this.productService.getAll().subscribe({
+      next: (prods: any[]) => { this.allProducts = prods; },
+      error: () => {}
+    });
+
+    if (this.isApprentice()) {
       this.loadApprenticeData();
     }
   }
 
+  ngOnDestroy(): void {
+    this.stopScanner();
+  }
+
+  isApprentice(): boolean {
+    return (this.role + '').toUpperCase().includes('APPRENTICE') ||
+           (this.role + '').toUpperCase().includes('APRENDIZ');
+  }
+
+  // ================================================================
+  // APPRENTICE DATA
+  // ================================================================
   loadApprenticeData(): void {
-    // Cargar reportes de simulación del aprendiz (Historial de desempeño privado)
     this.reportService.getAll().subscribe({
-      next: (reports) => {
-        // Filtrar reportes que correspondan al aprendiz logueado
-        this.userReports = reports.filter(r => r.user && r.user.name.toLowerCase() === this.userName.toLowerCase());
-
-        // Semilla por si no tiene simulaciones en base de datos para no dejar vacío
-        if (this.userReports.length === 0) {
-          this.userReports = [
-            { id: 1, date: new Date().toISOString(), score: 82, effectiveness: 85, state: 'Calificado: Aprobado' },
-            { id: 2, date: new Date(Date.now() - 86400000).toISOString(), score: 65, effectiveness: 70, state: 'Calificado: No aprobado' }
-          ];
-        }
-
+      next: (reports: any[]) => {
+        // Filter only this user's reports
+        this.userReports = reports.filter(r =>
+          r.user && (r.user.id === this.userId ||
+                     (r.user.name || '').toLowerCase() === this.userName.toLowerCase())
+        );
         this.totalSimulations = this.userReports.length;
         if (this.totalSimulations > 0) {
-          const sum = this.userReports.reduce((total, r) => total + (r.score || 0), 0);
+          const sum = this.userReports.reduce((t: number, r: any) => t + (r.score || 0), 0);
           this.averageScore = Math.round(sum / this.totalSimulations);
         }
-
         this.matchEvaluations();
       },
-      error: (err) => {
-        console.error('Error al cargar reportes del aprendiz:', err);
-        // Semilla fallback
-        this.userReports = [
-          { id: 1, date: new Date().toISOString(), score: 82, effectiveness: 85, state: 'Calificado: Aprobado' },
-          { id: 2, date: new Date(Date.now() - 86400000).toISOString(), score: 65, effectiveness: 70, state: 'Calificado: No aprobado' }
-        ];
-        this.totalSimulations = 2;
-        this.averageScore = 73;
-        this.matchEvaluations();
-      }
+      error: () => {}
     });
 
-    // Cargar calificaciones escritas por instructores
     this.commentService.getAll().subscribe({
-      next: (comments) => {
-        const parsedList = comments.map(item => {
-          let parsed = {
-            studentName: 'Aprendiz',
-            module: 'Caja POS',
-            state: 'Aprobado',
-            feedback: item.comment,
-            errors: '0'
-          };
-          try {
-            parsed = JSON.parse(item.comment);
-          } catch (e) {
-            parsed.feedback = item.comment;
-          }
+      next: (comments: any[]) => {
+        const parsed = comments.map(item => {
+          let p: any = { studentName: '', module: 'Caja POS', state: 'Aprobado', feedback: item.comment, errors: '0' };
+          try { p = { ...p, ...JSON.parse(item.comment) }; } catch {}
           return {
             id: item.id,
-            studentName: parsed.studentName,
-            module: parsed.module,
+            studentName: p.studentName || '',
+            module: p.module || 'Caja POS',
             score: item.score,
-            state: parsed.state,
-            feedback: parsed.feedback,
-            errors: parsed.errors,
-            date: item.date ? item.date.split('T')[0] : new Date().toLocaleDateString()
+            state: p.state || 'Aprobado',
+            feedback: p.feedback || item.comment,
+            errors: p.errors || '0',
+            date: item.date ? item.date.split('T')[0] : ''
           };
         });
-
-        // Filtrar evaluaciones que pertenecen a este aprendiz
-        this.userEvaluations = parsedList.filter(e => e.studentName.toLowerCase() === this.userName.toLowerCase());
-
-        // Si es Carlos Ramírez (cuenta demo), sembrar una calificación por defecto
-        if (this.userEvaluations.length === 0 && this.userName.toLowerCase().includes('ramirez')) {
-          this.userEvaluations = [
-            {
-              id: 99,
-              studentName: this.userName,
-              module: 'Caja POS',
-              score: 82,
-              state: 'Aprobado',
-              feedback: 'Buen desempeño general en la simulación, pero debe mejorar la velocidad en el cobro con tarjeta.',
-              errors: '3',
-              date: new Date().toISOString().split('T')[0]
-            }
-          ];
-        }
-
+        this.userEvaluations = parsed.filter(e =>
+          e.studentName.toLowerCase() === this.userName.toLowerCase()
+        );
         this.approvedCount = this.userEvaluations.filter(e => e.state === 'Aprobado').length;
         this.matchEvaluations();
       },
-      error: (err) => {
-        console.error('Error al cargar calificaciones del aprendiz:', err);
-      }
+      error: () => {}
     });
   }
 
   matchEvaluations(): void {
-    if (this.userReports.length > 0) {
-      this.userReports.forEach(r => {
-        // Encontrar evaluación con puntaje coincidente o aproximado
-        const matched = this.userEvaluations.find(e => Math.abs(e.score - r.score) < 5);
-        if (matched) {
-          r.state = 'Calificado: ' + matched.state;
-          r.feedback = matched.feedback;
-        } else {
-          // Si no hay comentario en la base de datos
-          if (!r.state) {
-            r.state = 'Pendiente de Calificación';
-            r.feedback = 'Su simulación está en espera de la revisión por parte del instructor.';
+    this.userReports.forEach(r => {
+      const matched = this.userEvaluations.find(e => Math.abs(e.score - r.score) < 5);
+      if (matched) {
+        r.state = 'Calificado: ' + matched.state;
+        r.feedback = matched.feedback;
+      } else if (!r.state) {
+        r.state = 'Pendiente de Calificación';
+        r.feedback = 'En espera de revisión del instructor.';
+      }
+    });
+  }
+
+  // ================================================================
+  // BARCODE SCANNER (ZXing — compatible con SAT PCS via cámara)
+  // ================================================================
+  async startScanner(): Promise<void> {
+    this.scannerLoading = true;
+    this.scannedCode = '';
+    this.scannedProduct = null;
+    this.scannerActive = true;
+
+    // Pequeño delay para que el *ngIf renderice el <video>
+    await this.delay(300);
+
+    try {
+      this.codeReader = new BrowserMultiFormatReader();
+      const videoEl = this.videoRef?.nativeElement;
+      if (!videoEl) {
+        this.errorMessage = 'Error al acceder al elemento de video.';
+        this.scannerActive = false;
+        this.scannerLoading = false;
+        return;
+      }
+
+      this.scannerLoading = false;
+      // Decodifica continuamente desde la cámara
+      await this.codeReader.decodeFromVideoDevice(
+        undefined,
+        videoEl,
+        (result: any, err: any) => {
+          if (result) {
+            this.onBarcodeDetected(result.getText());
           }
+          // Ignoramos NotFoundException que es ruido normal del scanner
         }
-      });
+      );
+    } catch (e: any) {
+      this.scannerLoading = false;
+      this.errorMessage = 'No se pudo acceder a la cámara: ' + (e?.message || e);
+      this.scannerActive = false;
+      setTimeout(() => this.errorMessage = '', 4000);
     }
   }
 
+  stopScanner(): void {
+    if (this.codeReader) {
+      BrowserMultiFormatReader.releaseAllStreams();
+      this.codeReader = null;
+    }
+    this.scannerActive = false;
+    this.scannerLoading = false;
+  }
+
+  onBarcodeDetected(code: string): void {
+    if (this.scannedCode === code) return; // Evitar duplicados
+    this.scannedCode = code;
+    this.stopScanner();
+
+    // Buscar el producto por código de barras en la lista cargada
+    const found = this.allProducts.find((p: any) =>
+      (p.barcode || '').trim() === code.trim()
+    );
+
+    if (found) {
+      this.scannedProduct = found;
+      this.form.patchValue({
+        product: found.name,
+        price: found.price,
+        quantity: 1
+      });
+      this.successMessage = `Producto detectado: ${found.name} — $${found.price}`;
+    } else {
+      this.scannedProduct = null;
+      this.form.patchValue({ product: code });
+      this.successMessage = `Código escaneado: ${code} (no encontrado en catálogo, ingresar precio manual)`;
+    }
+    setTimeout(() => this.successMessage = '', 5000);
+  }
+
+  /** Handle input manually typed barcode (for USB gun scanners like SAT PCS) */
+  onManualBarcodeInput(event: Event): void {
+    const input = (event.target as HTMLInputElement).value.trim();
+    if (input.length > 4) {
+      const found = this.allProducts.find((p: any) => (p.barcode || '').trim() === input);
+      if (found) {
+        this.scannedProduct = found;
+        this.form.patchValue({ product: found.name, price: found.price, quantity: 1 });
+        this.successMessage = `Producto: ${found.name} — $${found.price}`;
+        setTimeout(() => this.successMessage = '', 4000);
+      }
+    }
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // ================================================================
+  // FORM SUBMIT
+  // ================================================================
   autofill(): void {
-    const products = ['Arroz Premium', 'Leche 1L', 'Pan Integral', 'Chocolate', 'Gaseosa Cola'];
-    const randomProduct = products[Math.floor(Math.random() * products.length)];
-    const randomQty = Math.floor(1 + Math.random() * 5);
-    const prices: { [key: string]: number } = {
-      'Arroz Premium': 8000,
-      'Leche 1L': 4500,
-      'Pan Integral': 5500,
-      'Chocolate': 3000,
-      'Gaseosa Cola': 6000
-    };
-    
-    this.form.patchValue({
-      product: randomProduct,
-      quantity: randomQty,
-      price: prices[randomProduct]
-    });
+    if (this.allProducts.length > 0) {
+      const rand = this.allProducts[Math.floor(Math.random() * this.allProducts.length)];
+      this.form.patchValue({ product: rand.name, quantity: 1, price: rand.price });
+    } else {
+      this.form.patchValue({ product: 'Producto Demo', quantity: 1, price: 5000 });
+    }
   }
 
   submit(): void {
@@ -194,8 +258,6 @@ export class TransactionFormComponent implements OnInit {
     const val = this.form.value;
     const transaction = {
       status: 'COMPLETADO',
-      client: 'Cliente Manual',
-      type: 'POS',
       product: val.product,
       quantity: val.quantity,
       total: val.quantity * val.price,
@@ -205,18 +267,17 @@ export class TransactionFormComponent implements OnInit {
     };
 
     this.transactionService.create(transaction).subscribe({
-      next: (savedTx) => {
+      next: () => {
         this.successMessage = 'Transacción registrada correctamente';
         this.errorMessage = '';
         this.form.reset();
-        if (this.listComponent) {
-          this.listComponent.load();
-        }
+        this.scannedCode = '';
+        this.scannedProduct = null;
+        if (this.listComponent) this.listComponent.load();
         setTimeout(() => this.successMessage = '', 3000);
       },
       error: (err) => {
-        console.error('Error al guardar transacción manual:', err);
-        this.errorMessage = 'Error al registrar la transacción en el servidor';
+        this.errorMessage = 'Error al registrar la transacción';
         this.successMessage = '';
         setTimeout(() => this.errorMessage = '', 3000);
       }

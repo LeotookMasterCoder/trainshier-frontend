@@ -7,11 +7,7 @@ import { CommentService } from '../../../core/services/comment.service';
   styleUrls: ['./instructor-comments.component.scss']
 })
 export class InstructorCommentsComponent implements OnInit {
-  nombreAprendiz: string = 'Carlos Ramírez';
-  puntaje: number = 82;
-  tiempo: number = 14;
-  errores: number = 3;
-  aiAnalysis: string = 'Analizando desempeño...';
+
   notification: string = '';
 
   comment: any = {
@@ -24,80 +20,54 @@ export class InstructorCommentsComponent implements OnInit {
   };
 
   comments: any[] = [];
+  loading: boolean = true;
 
   constructor(private commentService: CommentService) {}
 
   ngOnInit(): void {
     this.loadComments();
-    this.generateAIAnalysis();
-
-    setTimeout(() => {
-      this.notification = 'El aprendiz terminó correctamente la simulación.';
-    }, 1500);
   }
 
   loadComments(): void {
+    this.loading = true;
     this.commentService.getAll().subscribe({
       next: (res: any[]) => {
         this.comments = res.map(item => {
-          let parsed = {
+          let parsed: any = {
             studentName: 'Aprendiz',
-            module: 'Caja POS',
+            module: 'Simulación',
             state: 'Aprobado',
             feedback: item.comment,
             errors: '0'
           };
           try {
-            parsed = JSON.parse(item.comment);
-          } catch (e) {
-            // Fallback if not JSON
+            const p = JSON.parse(item.comment);
+            if (p && typeof p === 'object') {
+              parsed = { ...parsed, ...p };
+            }
+          } catch {
             parsed.feedback = item.comment;
           }
           return {
             id: item.id,
-            studentName: parsed.studentName,
-            module: parsed.module,
+            studentName: parsed.studentName || 'Aprendiz',
+            module: parsed.module || 'Simulación',
             score: item.score,
-            state: parsed.state,
-            feedback: parsed.feedback,
-            errors: parsed.errors,
+            state: parsed.state || 'Aprobado',
+            feedback: parsed.feedback || item.comment,
+            errors: parsed.errors || '0',
             date: item.date ? item.date.split('T')[0] : new Date().toLocaleDateString()
           };
         });
-
-        // Seed some defaults only if database is empty
-        if (this.comments.length === 0) {
-          this.comments = [
-            {
-              studentName: 'Carlos Ramírez',
-              module: 'Arqueo de Caja',
-              score: 82,
-              state: 'Aprobado',
-              feedback: 'Buen desempeño general en la simulación, pero debe mejorar la velocidad en el cobro con tarjeta.',
-              errors: '3',
-              date: new Date().toISOString().split('T')[0]
-            }
-          ];
-        }
+        this.loading = false;
       },
       error: (err) => {
-        console.error('Error loading comments from DB, using fallback:', err);
-        const savedComments = localStorage.getItem('comments');
-        if (savedComments) {
-          this.comments = JSON.parse(savedComments);
-        }
+        console.error('Error loading comments:', err);
+        const saved = localStorage.getItem('comments');
+        this.comments = saved ? JSON.parse(saved) : [];
+        this.loading = false;
       }
     });
-  }
-
-  generateAIAnalysis(): void {
-    if (this.puntaje >= 90) {
-      this.aiAnalysis = 'Excelente desempeño. El aprendiz domina los procesos POS, la atención al cliente y la gestión de promociones.';
-    } else if (this.puntaje >= 70) {
-      this.aiAnalysis = 'Buen rendimiento general. Se recomienda reforzar la velocidad de atención y el cálculo correcto del cambio al cliente.';
-    } else {
-      this.aiAnalysis = 'Se requiere práctica adicional. Es recomendable fortalecer el manejo de descuentos, procesos POS y validación de productos.';
-    }
   }
 
   saveComment(): void {
@@ -109,6 +79,7 @@ export class InstructorCommentsComponent implements OnInit {
       !this.comment.feedback
     ) {
       this.notification = 'Completa todos los campos obligatorios.';
+      setTimeout(() => this.notification = '', 3000);
       return;
     }
 
@@ -125,13 +96,13 @@ export class InstructorCommentsComponent implements OnInit {
     };
 
     this.commentService.create(payload).subscribe({
-      next: (savedComment) => {
-        // Trigger notification for the Apprentice role
+      next: () => {
+        // Notify the apprentice
         const savedNotifs = localStorage.getItem('trainshier_notifications');
         let notifs = savedNotifs ? JSON.parse(savedNotifs) : [];
         notifs.push({
           id: String(Date.now()),
-          role: 'APRENDIZ',
+          role: 'APPRENTICE',
           message: `📋 El instructor calificó tu simulación de "${this.comment.module}" con un puntaje de ${this.comment.score}.`,
           actionText: 'Ver Calificación',
           route: '/evaluation',
@@ -141,18 +112,13 @@ export class InstructorCommentsComponent implements OnInit {
 
         this.loadComments();
         this.notification = 'Evaluación guardada correctamente.';
-        this.comment = {
-          studentName: '',
-          module: '',
-          score: '',
-          state: '',
-          feedback: '',
-          errors: ''
-        };
+        this.comment = { studentName: '', module: '', score: '', state: '', feedback: '', errors: '' };
+        setTimeout(() => this.notification = '', 3000);
       },
       error: (err) => {
-        console.error('Error saving comment in DB:', err);
+        console.error('Error saving comment:', err);
         this.notification = 'Error al guardar la evaluación.';
+        setTimeout(() => this.notification = '', 3000);
       }
     });
   }
@@ -163,88 +129,42 @@ export class InstructorCommentsComponent implements OnInit {
       this.commentService.delete(target.id).subscribe({
         next: () => {
           this.loadComments();
-          this.notification = 'Evaluación eliminada correctamente.';
+          this.notification = 'Evaluación eliminada.';
+          setTimeout(() => this.notification = '', 3000);
         },
-        error: (err) => {
-          console.error('Error deleting comment from DB:', err);
+        error: () => {
           this.comments.splice(index, 1);
           this.notification = 'Evaluación eliminada localmente.';
+          setTimeout(() => this.notification = '', 3000);
         }
       });
     } else {
       this.comments.splice(index, 1);
-      this.notification = 'Evaluación eliminada.';
     }
   }
 
   exportEvaluation(): void {
-
-    this.notification =
-      'Función de exportación disponible próximamente.';
-
+    this.notification = 'Función de exportación disponible próximamente.';
+    setTimeout(() => this.notification = '', 3000);
   }
 
   @HostListener('document:keydown.enter')
-
   handleEnter(): void {
-
-    const buttons =
-      document.querySelectorAll('button');
-
-    if (buttons.length > 0) {
-
-      (buttons[0] as HTMLButtonElement).focus();
-
-    }
-
+    const buttons = document.querySelectorAll('button');
+    if (buttons.length > 0) (buttons[0] as HTMLButtonElement).focus();
   }
 
   getApprovedCount(): number {
-
-    return this.comments.filter(
-
-      comment =>
-        comment.state === 'Aprobado'
-
-    ).length;
-
+    return this.comments.filter(c => c.state === 'Aprobado').length;
   }
 
   getRejectedCount(): number {
-
-    return this.comments.filter(
-
-      comment =>
-        comment.state === 'No aprobado'
-
-    ).length;
-
+    return this.comments.filter(c => c.state === 'No aprobado').length;
   }
 
   getAverageScore(): number {
-
-    if (this.comments.length === 0) {
-
-      return 0;
-
-    }
-
-    const total =
-      this.comments.reduce(
-
-        (sum, item) =>
-          sum + Number(item.score),
-
-        0
-
-      );
-
-    return Math.round(
-
-      total / this.comments.length
-
-    );
-
+    if (this.comments.length === 0) return 0;
+    const total = this.comments.reduce((sum, item) => sum + Number(item.score), 0);
+    return Math.round(total / this.comments.length);
   }
-
 }

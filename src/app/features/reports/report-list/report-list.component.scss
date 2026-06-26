@@ -322,3 +322,63 @@ td {
     height: 220px;
   }
 }
+
+// ---- Empty States ----
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 40px;
+  color: var(--text-soft);
+  gap: 12px;
+
+  .empty-icon { font-size: 3.5rem; }
+  h3 { font-size: 1.3rem; color: var(--text); font-weight: 700; }
+  p { max-width: 420px; line-height: 1.5; font-size: 0.93rem; }
+}
+
+.empty-inline {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-soft);
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.badge-active {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(46, 204, 113, 0.12);
+  color: #2ecc71;
+  border: 1px solid #2ecc71;
+}
+
+.badge-inactive {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(225, 95, 65, 0.12);
+  color: #e15f41;
+  border: 1px solid #e15f41;
+}
+
+// Spinner
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-top-color: var(--accent, #6366f1);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
