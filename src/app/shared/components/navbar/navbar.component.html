@@ -149,7 +149,11 @@
       routerLink="/profile"
     >
 
-      <span class="nav-avatar-icon" [title]="role">{{ avatarIcon }}</span>
+      <img
+        [src]="avatarImage"
+        [alt]="role"
+        class="nav-avatar-img"
+      >
 
     </div>
 

@@ -57,13 +57,13 @@ export class NavbarComponent{
 
   }
 
-  /** Avatar icon based on role - static, no dynamic photo upload */
-  get avatarIcon(): string {
+  /** Avatar image path based on role — color variants of the classic profile icon */
+  get avatarImage(): string {
     const r = this.role.toUpperCase();
-    if (r === 'ADMIN' || r === 'ADMINISTRADOR') return '🛡️';
-    if (r === 'INSTRUCTOR') return '👨‍🏫';
-    if (r === 'OBSERVADOR') return '👁️';
-    return '👤'; // APRENDIZ
+    if (r === 'ADMIN' || r === 'ADMINISTRADOR' || r === 'ADMINISTRATOR') return 'assets/img/avatar_admin.png';
+    if (r === 'INSTRUCTOR') return 'assets/img/avatar_instructor.png';
+    if (r === 'OBSERVADOR') return 'assets/img/avatar_observador.png';
+    return 'assets/img/avatar_aprendiz.png';
   }
 
   isObserver():boolean{
