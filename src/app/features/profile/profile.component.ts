@@ -14,13 +14,21 @@ export class ProfileComponent{
 
   showSuccess: boolean = false;
   errorMessage: string = '';
-  profileImage:string='assets/img/default-profile.png';
 
   role:string='APRENDIZ';
 
   name:string='Usuario TrainShier';
 
   userId:string='TRN-0000';
+
+  /** Avatar icon based on role - no dynamic photo upload allowed */
+  get avatarIcon(): string {
+    const r = this.role.toUpperCase();
+    if (r === 'ADMIN' || r === 'ADMINISTRADOR') return '🛡️';
+    if (r === 'INSTRUCTOR') return '👨‍🏫';
+    if (r === 'OBSERVADOR') return '👁️';
+    return '👤'; // APRENDIZ
+  }
 
   isLoggedIn: boolean = false;
   solicitudRol: string = 'instructor';
@@ -55,7 +63,7 @@ export class ProfileComponent{
     private userService: UserService
   ){
     this.isLoggedIn = !!localStorage.getItem('token');
-    
+
     if (!this.isLoggedIn) {
       this.role = 'OBSERVADOR';
       this.name = 'Invitado Observador';
@@ -65,8 +73,7 @@ export class ProfileComponent{
 
     this.role = localStorage.getItem('role') || 'APRENDIZ';
     this.name = localStorage.getItem('name') || 'Usuario TrainShier';
-    this.userId = localStorage.getItem('userId') || 'TRN-5642';
-    this.profileImage = localStorage.getItem('profileImage') || 'assets/img/default-profile.png';
+    this.userId = localStorage.getItem('userId') || 'TRN-0000';
 
     this.form.patchValue({
       name: this.name,
@@ -76,31 +83,6 @@ export class ProfileComponent{
     });
   }
 
-  changePhoto(event:any):void{
-
-    const file=event.target.files[0];
-
-    if(!file){
-      return;
-    }
-
-    const reader=new FileReader();
-
-    reader.onload=()=>{
-
-      this.profileImage=
-        reader.result as string;
-
-      localStorage.setItem(
-        'profileImage',
-        this.profileImage
-      );
-
-    };
-
-    reader.readAsDataURL(file);
-
-  }
   saveChanges(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -138,6 +120,7 @@ export class ProfileComponent{
       }
     });
   }
+
   requestRoleChange(): void {
     const savedNotifs = localStorage.getItem('trainshier_notifications');
     let notifs = savedNotifs ? JSON.parse(savedNotifs) : [];

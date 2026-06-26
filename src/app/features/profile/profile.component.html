@@ -13,22 +13,9 @@
 
       <div class="profile-image-box">
 
-        <label>
-
-          <input
-            type="file"
-            hidden
-            accept="image/*"
-            (change)="changePhoto($event)"
-          >
-
-          <img
-            [src]="profileImage"
-            class="profile-image"
-            alt="Perfil"
-          >
-
-        </label>
+        <div class="avatar-circle" [title]="role">
+          <span class="avatar-icon">{{ avatarIcon }}</span>
+        </div>
 
       </div>
 
@@ -234,3 +221,4 @@
   </ng-template>
 
 </div>
+

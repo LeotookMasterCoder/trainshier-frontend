@@ -96,6 +96,14 @@ export class AuthService {
     return this.http.post<any>(`${this.apiUrl}/recover-password`, data);
   }
 
+  /**
+   * Returns the list of instructors from the public endpoint.
+   * No JWT token needed - used by the apprentice registration form.
+   */
+  getInstructors(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/instructors`);
+  }
+
   checkTokenExpiration(): boolean {
     const token = localStorage.getItem('token');
     const timestampStr = localStorage.getItem('login_timestamp');

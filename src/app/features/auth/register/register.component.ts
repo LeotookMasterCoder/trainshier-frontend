@@ -8,7 +8,6 @@ import {
 import { Router } from '@angular/router';
 
 import { AuthService } from '../../../core/services/auth.service';
-import { UserService } from '../../../core/services/user.service';
 
 @Component({
   selector:'app-register',
@@ -35,8 +34,7 @@ export class RegisterComponent implements OnInit {
   constructor(
     private fb:FormBuilder,
     private router:Router,
-    private authService:AuthService,
-    private userService:UserService
+    private authService:AuthService
   ){
 
     this.generateId();
@@ -46,16 +44,16 @@ export class RegisterComponent implements OnInit {
   ngOnInit(): void {
     this.darkMode = localStorage.getItem('theme') === 'dark';
 
-    // Cargar los instructores para el filtro
-    this.userService.getAll().subscribe({
-      next: (users) => {
-        this.instructors = users.filter(u => u.role === 'INSTRUCTOR' || u.role === 'instructor');
+    // Cargar los instructores desde el endpoint público (no requiere JWT)
+    this.authService.getInstructors().subscribe({
+      next: (instructors) => {
+        this.instructors = instructors;
         if (this.instructors.length > 0) {
           this.selectedInstructorId = this.instructors[0].id;
         }
       },
       error: (err) => {
-        console.error("Error al cargar instructores", err);
+        console.error('Error al cargar instructores', err);
       }
     });
   }

@@ -14,8 +14,6 @@ export class NavbarComponent{
 
   role:string='OBSERVADOR';
 
-  profileImage:string='assets/img/default-profile.png';
-
   notifications: any[] = [];
   showNotificationsDropdown: boolean = false;
 
@@ -47,15 +45,6 @@ export class NavbarComponent{
 
     }
 
-    const savedImage=
-      localStorage.getItem('profileImage');
-
-    if(savedImage){
-
-      this.profileImage=savedImage;
-
-    }
-
     // Load active notifications
     this.loadNotifications();
 
@@ -66,6 +55,15 @@ export class NavbarComponent{
       }
     }, 3000);
 
+  }
+
+  /** Avatar icon based on role - static, no dynamic photo upload */
+  get avatarIcon(): string {
+    const r = this.role.toUpperCase();
+    if (r === 'ADMIN' || r === 'ADMINISTRADOR') return '🛡️';
+    if (r === 'INSTRUCTOR') return '👨‍🏫';
+    if (r === 'OBSERVADOR') return '👁️';
+    return '👤'; // APRENDIZ
   }
 
   isObserver():boolean{
@@ -117,7 +115,7 @@ export class NavbarComponent{
       ];
       localStorage.setItem('trainshier_notifications', JSON.stringify(allNotifications));
     }
-    
+
     // Filter active unread notifications for this role
     const currentRole = this.role === 'ADMINISTRADOR' ? 'ADMIN' : this.role;
     this.notifications = allNotifications.filter(n => n.role === currentRole && !n.read);
@@ -142,7 +140,7 @@ export class NavbarComponent{
       }
       localStorage.setItem('trainshier_notifications', JSON.stringify(all));
     }
-    
+
     this.showNotificationsDropdown = false;
     this.loadNotifications();
     this.router.navigate([notif.route]);
