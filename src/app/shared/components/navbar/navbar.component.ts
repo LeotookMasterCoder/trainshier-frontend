@@ -78,41 +78,7 @@ export class NavbarComponent{
     if (saved) {
       allNotifications = JSON.parse(saved);
     } else {
-      // Seed default notifications for testing
-      allNotifications = [
-        {
-          id: '1',
-          role: 'APRENDIZ',
-          message: '📋 Tu examen del simulador ha sido calificado por el instructor.',
-          actionText: 'Ver Calificación',
-          route: '/evaluation',
-          read: false
-        },
-        {
-          id: '2',
-          role: 'INSTRUCTOR',
-          message: '🚀 El aprendiz Carlos Ruiz subió los resultados de su simulación para calificación.',
-          actionText: 'Evaluar',
-          route: '/evaluation',
-          read: false
-        },
-        {
-          id: '3',
-          role: 'ADMIN',
-          message: '⚠️ Soporte: Reporte de error en módulo de facturación (ID #8827).',
-          actionText: 'Ver Reportes',
-          route: '/reports',
-          read: false
-        },
-        {
-          id: '4',
-          role: 'ADMIN',
-          message: '👤 Solicitud: El usuario Santiago Ortega solicita cambio de rol a Instructor.',
-          actionText: 'Ver Solicitudes',
-          route: '/statistics',
-          read: false
-        }
-      ];
+      allNotifications = [];
       localStorage.setItem('trainshier_notifications', JSON.stringify(allNotifications));
     }
 

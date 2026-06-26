@@ -696,7 +696,16 @@ export class SimulatorComponent implements OnInit {
       total: this.totalToPay,
       errors: errorsCount,
       effectiveness: this.customerSatisfaction,
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
+      details: this.cart.map(item => {
+        const prod = this.products.find(p => p.code === item.code || p.name === item.name);
+        return {
+          product: prod ? { id: prod.id } : null,
+          quantity: item.quantity,
+          unitPrice: item.price,
+          discountApplied: 0
+        };
+      })
     };
 
     this.transactionService.create(transaction).subscribe({

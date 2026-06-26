@@ -256,14 +256,21 @@ export class TransactionFormComponent implements OnInit, OnDestroy {
     }
 
     const val = this.form.value;
+    const prod = this.allProducts.find(p => p.name === val.product || p.barcode === val.product);
     const transaction = {
-      status: 'COMPLETADO',
-      product: val.product,
-      quantity: val.quantity,
+      status: 'COMPLETED',
       total: val.quantity * val.price,
       errors: 0,
       effectiveness: 100.0,
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
+      details: [
+        {
+          product: prod ? { id: prod.id } : null,
+          quantity: val.quantity,
+          unitPrice: val.price,
+          discountApplied: 0
+        }
+      ]
     };
 
     this.transactionService.create(transaction).subscribe({

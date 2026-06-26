@@ -40,6 +40,9 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   private effectivenessChartInst: any = null;
   private topProductsChartInst: any = null;
 
+  private cachedTransactions: any[] | null = null;
+  private cachedProducts: any[] | null = null;
+
   constructor(
     private userService: UserService,
     private transactionService: TransactionService,
@@ -93,6 +96,8 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
         if (txList.length > 0) {
           this.averageTicket = Math.round(this.totalRevenue / txList.length);
         }
+        this.cachedTransactions = txList;
+        this.calculateTopProducts();
       },
       error: () => {}
     });
@@ -101,15 +106,39 @@ export class ReportsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.productService.getAll().subscribe({
       next: (prodList: any[]) => {
         this.activeProducts = prodList.filter((p: any) => p.active !== false).length;
-        // Top products by name (use transaction details if available, else alphabetical top 5)
-        this.topProducts = prodList
-          .filter((p: any) => p.active !== false)
-          .slice(0, 5)
-          .map((p: any) => ({ name: p.name, sales: 0 }));
-        this.tryRenderCharts();
+        this.cachedProducts = prodList;
+        this.calculateTopProducts();
       },
       error: () => {}
     });
+  }
+
+  calculateTopProducts(): void {
+    if (!this.cachedProducts || !this.cachedTransactions) return;
+
+    const salesMap = new Map<number, number>();
+    this.cachedTransactions.forEach(tx => {
+      if (tx.details) {
+        tx.details.forEach((det: any) => {
+          if (det.product && det.product.id) {
+            const count = salesMap.get(det.product.id) || 0;
+            salesMap.set(det.product.id, count + (det.quantity || 0));
+          }
+        });
+      }
+    });
+
+    const activeProds = this.cachedProducts.filter((p: any) => p.active !== false);
+    this.topProducts = activeProds.map((p: any) => {
+      const sales = salesMap.get(p.id) || 0;
+      return { name: p.name, sales: sales };
+    });
+
+    this.topProducts.sort((a, b) => b.sales - a.sales);
+    if (this.topProducts.length > 5) {
+      this.topProducts = this.topProducts.slice(0, 5);
+    }
+    this.tryRenderCharts();
   }
 
   loadReports(): void {
