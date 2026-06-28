@@ -96,6 +96,14 @@ export class AuthService {
     return this.http.post<any>(`${this.apiUrl}/recover-password`, data);
   }
 
+  requestRecoveryCode(email: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/recover-password/request?email=${email}`, {});
+  }
+
+  verifyRecoveryCode(email: string, code: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/recover-password/verify?email=${email}&code=${code}`, {});
+  }
+
   /** TRN Registration requests */
   requestTrnCode(instructorId: number, studentName: string, studentEmail: string): Observable<any> {
     return this.http.post<any>(`${environment.apiUrl}/auth/trn-requests`, { instructorId, studentName, studentEmail });

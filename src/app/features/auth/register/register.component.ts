@@ -214,6 +214,19 @@ export class RegisterComponent implements OnInit {
         this.requestingCode = false;
         this.hasRequestedCode = true;
         this.successMessage = response.message || 'Solicitud de autorización TRN enviada correctamente. Espera a que el instructor la apruebe.';
+
+        // Push real-time notification to the instructor
+        const savedNotifs = localStorage.getItem('trainshier_notifications');
+        let notifs = savedNotifs ? JSON.parse(savedNotifs) : [];
+        notifs.push({
+          id: String(Date.now()),
+          role: 'INSTRUCTOR',
+          message: `📋 El aprendiz "${this.trnStudentName}" ha solicitado un código de autorización TRN para registrarse.`,
+          actionText: 'Revisar Solicitudes',
+          route: '/evaluation',
+          read: false
+        });
+        localStorage.setItem('trainshier_notifications', JSON.stringify(notifs));
       },
       error: (err) => {
         this.requestingCode = false;

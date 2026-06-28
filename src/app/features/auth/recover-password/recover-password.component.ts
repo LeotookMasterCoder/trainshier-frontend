@@ -65,30 +65,49 @@ export class RecoverPasswordComponent implements OnInit {
 
     if (this.currentStep === 1) {
       const emailCtrl = this.form.get('email');
-      if (emailCtrl?.invalid) {
-        emailCtrl.markAsTouched();
+      if (!emailCtrl || emailCtrl.invalid) {
+        emailCtrl?.markAsTouched();
         this.errorMessage = 'Por favor, ingresa un correo electrónico válido.';
         return;
       }
-      // Simular el envío de código
-      this.successMessage = 'Código de verificación enviado al correo (simulado).';
-      setTimeout(() => {
-        this.successMessage = '';
-        this.currentStep = 2;
-      }, 1500);
+      this.successMessage = 'Solicitando código de verificación...';
+      this.authService.requestRecoveryCode(emailCtrl.value || '').subscribe({
+        next: (res) => {
+          this.successMessage = 'Código de verificación enviado al correo.';
+          this.errorMessage = '';
+          setTimeout(() => {
+            this.successMessage = '';
+            this.currentStep = 2;
+          }, 1500);
+        },
+        error: (err) => {
+          this.successMessage = '';
+          this.errorMessage = err.error?.message || 'Error al enviar el código de recuperación. El correo podría no estar registrado.';
+        }
+      });
 
     } else if (this.currentStep === 2) {
       const codeCtrl = this.form.get('code');
-      if (codeCtrl?.invalid) {
-        codeCtrl.markAsTouched();
+      if (!codeCtrl || codeCtrl.invalid) {
+        codeCtrl?.markAsTouched();
         this.errorMessage = 'Por favor, ingresa el código de 6 dígitos.';
         return;
       }
-      this.successMessage = 'Código verificado correctamente.';
-      setTimeout(() => {
-        this.successMessage = '';
-        this.currentStep = 3;
-      }, 1000);
+      this.successMessage = 'Verificando código...';
+      this.authService.verifyRecoveryCode(this.form.value.email || '', codeCtrl.value || '').subscribe({
+        next: (res) => {
+          this.successMessage = 'Código verificado correctamente.';
+          this.errorMessage = '';
+          setTimeout(() => {
+            this.successMessage = '';
+            this.currentStep = 3;
+          }, 1000);
+        },
+        error: (err) => {
+          this.successMessage = '';
+          this.errorMessage = err.error?.message || 'Código de verificación inválido o vencido.';
+        }
+      });
     }
   }
 

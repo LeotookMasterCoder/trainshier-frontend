@@ -173,6 +173,20 @@ export class InstructorCommentsComponent implements OnInit {
       next: (res) => {
         this.notification = `Solicitud aprobada. Código generado: ${res.trnCode}`;
         this.loadTrnRequests();
+
+        // Push real-time notification to the apprentice
+        const savedNotifs = localStorage.getItem('trainshier_notifications');
+        let notifs = savedNotifs ? JSON.parse(savedNotifs) : [];
+        notifs.push({
+          id: String(Date.now()),
+          role: 'APRENDIZ',
+          message: `🎉 ¡Tu solicitud de registro TRN ha sido aprobada! Código: ${res.trnCode}`,
+          actionText: 'Completar Registro',
+          route: '/register',
+          read: false
+        });
+        localStorage.setItem('trainshier_notifications', JSON.stringify(notifs));
+
         setTimeout(() => this.notification = '', 4000);
       },
       error: (err) => {
@@ -188,6 +202,20 @@ export class InstructorCommentsComponent implements OnInit {
       next: () => {
         this.notification = 'Solicitud rechazada.';
         this.loadTrnRequests();
+
+        // Push real-time notification to the apprentice
+        const savedNotifs = localStorage.getItem('trainshier_notifications');
+        let notifs = savedNotifs ? JSON.parse(savedNotifs) : [];
+        notifs.push({
+          id: String(Date.now()),
+          role: 'APRENDIZ',
+          message: `❌ Tu solicitud de registro TRN fue rechazada por el instructor.`,
+          actionText: 'Intentar de Nuevo',
+          route: '/register',
+          read: false
+        });
+        localStorage.setItem('trainshier_notifications', JSON.stringify(notifs));
+
         setTimeout(() => this.notification = '', 3000);
       },
       error: (err) => {
