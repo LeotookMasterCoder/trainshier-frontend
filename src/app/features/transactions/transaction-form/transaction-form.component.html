@@ -128,7 +128,7 @@
             </div>
 
             <!-- Botón de escáner por cámara -->
-            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;" *ngIf="cameraEnabled">
               <button
                 type="button"
                 (click)="startScanner()"
@@ -146,6 +146,11 @@
               <span *ngIf="scannedCode" style="font-family: monospace; font-size: 0.82rem; color: var(--text-soft); background: var(--surface); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-soft);">
                 Código: {{ scannedCode }}
               </span>
+            </div>
+
+            <!-- Cámara deshabilitada info -->
+            <div *ngIf="!cameraEnabled" style="font-size: 0.85rem; color: var(--text-soft); font-style: italic;">
+              📷 Cámara de escaneo deshabilitada por configuración del sistema. Usa el lector de pistola USB.
             </div>
 
             <!-- Producto encontrado -->

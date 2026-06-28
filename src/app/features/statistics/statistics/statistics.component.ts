@@ -23,8 +23,9 @@ export class StatisticsComponent implements OnInit {
 
   ranking: any[] = [];
 
-  currentTab: string = 'stats'; // 'stats' | 'users' | 'rfid'
+  currentTab: string = 'stats'; // 'stats' | 'users' | 'rfid' | 'settings'
   isAdmin: boolean = false;
+  cameraEnabled: boolean = true;
 
   // User Management
   allUsers: any[] = [];
@@ -78,8 +79,16 @@ export class StatisticsComponent implements OnInit {
                    roleStr.toUpperCase().includes('ADMINISTRADOR') ||
                    roleStr.toUpperCase().includes('ADMIN');
     this.currentAdminId = Number(localStorage.getItem('userId') || 0);
+    this.cameraEnabled = localStorage.getItem('camera_enabled') !== 'false';
     this.loadStatistics();
     if (this.isAdmin) this.loadAllUsers();
+  }
+
+  toggleCameraConfig(): void {
+    this.cameraEnabled = !this.cameraEnabled;
+    localStorage.setItem('camera_enabled', String(this.cameraEnabled));
+    this.successMessage = `Cámara de escaneo ${this.cameraEnabled ? 'habilitada' : 'deshabilitada'} globalmente.`;
+    setTimeout(() => this.successMessage = '', 4000);
   }
 
   private cachedUsers: any[] | null = null;

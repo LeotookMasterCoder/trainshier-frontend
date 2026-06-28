@@ -159,7 +159,7 @@
           </div>
         </div>
 
-        <table>
+        <table style="width: 100%; border-collapse: collapse;">
           <thead>
           <tr>
             <th>Código</th>
@@ -171,9 +171,24 @@
           </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let product of filteredProducts">
+          <tr *ngFor="let product of filteredProducts | slice:0:visibleProductsCount">
             <td>{{ product.code }}</td>
-            <td><small>{{ product.barcode || 'N/A' }}</small></td>
+            <td>
+              <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <small style="font-family: monospace;">{{ product.barcode || 'N/A' }}</small>
+                <button 
+                  *ngIf="product.barcode"
+                  type="button"
+                  (click)="showBarcodeModal(product.barcode, product.name)"
+                  title="Mostrar Código de Barras"
+                  style="background: none; border: none; padding: 2px; cursor: pointer; color: var(--accent); font-size: 1.1rem; line-height: 1; transition: transform 0.2s;"
+                  onmouseover="this.style.transform='scale(1.2)'"
+                  onmouseout="this.style.transform='scale(1)'"
+                >
+                  🏷️
+                </button>
+              </div>
+            </td>
             <td>{{ product.name }}</td>
             <td>
                 <span [class.out-stock]="product.stock <= 0">
@@ -187,10 +202,21 @@
             </td>
           </tr>
           <tr *ngIf="filteredProducts.length === 0">
-            <td colspan="6" class="no-results">No se encontraron productos coincidentes.</td>
+            <td [attr.colspan]="role === 'INSTRUCTOR' ? 6 : 5" class="no-results">No se encontraron productos coincidentes.</td>
           </tr>
           </tbody>
         </table>
+
+        <!-- Ver más Button -->
+        <div *ngIf="filteredProducts.length > visibleProductsCount" style="text-align: center; margin-top: 15px;">
+          <button 
+            type="button"
+            (click)="visibleProductsCount = visibleProductsCount + 10" 
+            style="background: var(--accent-soft, rgba(99,102,241,0.1)); color: var(--accent); border: 1px solid var(--accent); padding: 8px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.85rem;"
+          >
+            🔄 Ver más productos (+10)
+          </button>
+        </div>
       </div>
 
       <!-- CHAT INTERACTIVO CON EL CLIENTE (IA GEMINI) -->
@@ -452,6 +478,34 @@
       <div class="scanner-modal-footer">
         <p class="scanner-tip">Enfoque el código de barras impreso en el producto frente a la lente.</p>
         <button class="btn-cancel" (click)="showScanner = false">Cerrar Visor</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BARCODE MODAL OVERLAY -->
+  <div class="rfid-modal-overlay" *ngIf="showBarcodeModalFlag" (click)="showBarcodeModalFlag = false" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; align-items: center; justify-content: center;">
+    <div class="rfid-modal animate-scale-in" (click)="$event.stopPropagation()" style="background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; max-width: 480px; width: 90%; padding: 30px; box-shadow: var(--shadow-lg); text-align: center;">
+      <h3 style="margin: 0 0 10px 0; color: var(--gold); font-size: 1.3rem; font-weight: 700;">🏷️ Código de Barras de Producto</h3>
+      <p style="margin: 0 0 20px 0; font-size: 0.88rem; color: var(--text-soft); line-height: 1.4;">Apunta tu pistola física de código de barras <strong>SAT PCS</strong> a la pantalla para registrar el producto.</p>
+      
+      <div style="background: white; padding: 20px; border-radius: 10px; display: inline-block; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+        <img [src]="barcodeModalUrl" alt="Barcode" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
+      </div>
+      
+      <div style="font-weight: 700; font-size: 1.15rem; color: var(--text); margin-bottom: 25px;">
+        {{ barcodeModalName }}
+      </div>
+      
+      <div style="display: flex; justify-content: center;">
+        <button 
+          type="button" 
+          (click)="showBarcodeModalFlag = false" 
+          style="background: var(--accent); color: white; border: none; padding: 10px 30px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.95rem; transition: background 0.2s;"
+          onmouseover="this.style.background='var(--accent-hover)'"
+          onmouseout="this.style.background='var(--accent)'"
+        >
+          Cerrar
+        </button>
       </div>
     </div>
   </div>

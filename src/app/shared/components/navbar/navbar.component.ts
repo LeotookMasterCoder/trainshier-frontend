@@ -156,9 +156,15 @@ export class NavbarComponent{
 
   }
 
+  @HostListener('window:storage', ['$event'])
+  onStorageChange(event: StorageEvent): void {
+    if (event.key === 'trainshier_notifications') {
+      this.loadNotifications();
+    }
+  }
+
   @HostListener('document:click', ['$event'])
   closeDropdowns(event: Event): void {
     this.showNotificationsDropdown = false;
   }
-
 }

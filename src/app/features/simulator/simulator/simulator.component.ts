@@ -174,6 +174,12 @@ export class SimulatorComponent implements OnInit {
     stock: 0
   };
 
+  // Barcode Modal
+  barcodeModalUrl: string = '';
+  barcodeModalName: string = '';
+  showBarcodeModalFlag: boolean = false;
+  visibleProductsCount: number = 10;
+
   searchQuery: string = '';
 
   get filteredProducts(): Product[] {
@@ -183,8 +189,15 @@ export class SimulatorComponent implements OnInit {
     const query = this.searchQuery.toLowerCase().trim();
     return this.products.filter(p =>
       p.name.toLowerCase().includes(query) ||
-      p.code.toLowerCase().includes(query)
+      p.code.toLowerCase().includes(query) ||
+      (p.barcode && p.barcode.toLowerCase().includes(query))
     );
+  }
+
+  showBarcodeModal(barcode: string, productName: string): void {
+    this.barcodeModalUrl = `https://bwipjs-api.metafloor.com/?bcid=code128&text=${barcode.trim()}&scale=3&rotate=N&includetext`;
+    this.barcodeModalName = productName;
+    this.showBarcodeModalFlag = true;
   }
 
   /* =========================================
@@ -483,6 +496,9 @@ export class SimulatorComponent implements OnInit {
       this.showToast('Los observadores no pueden iniciar simulaciones', true);
       return;
     }
+
+    // Refresh products catalog in real-time from database
+    this.loadProducts();
 
     this.simulationStarted = true;
     this.simulationFinished = false;

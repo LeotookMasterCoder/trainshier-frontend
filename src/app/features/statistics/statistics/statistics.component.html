@@ -5,6 +5,7 @@
     <button class="tab-btn" (click)="changeTab('stats')" style="background: none; border: none; font-size: 1.1rem; padding: 5px 15px; cursor: pointer; color: var(--text); border-bottom: 2px solid transparent; outline: none; transition: all 0.3s; font-family: var(--font-display);" [style.border-bottom-color]="currentTab === 'stats' ? 'var(--gold)' : 'transparent'" [style.color]="currentTab === 'stats' ? 'var(--gold)' : 'var(--text-soft)'">📊 Estadísticas</button>
     <button class="tab-btn" (click)="changeTab('users')" style="background: none; border: none; font-size: 1.1rem; padding: 5px 15px; cursor: pointer; color: var(--text); border-bottom: 2px solid transparent; outline: none; transition: all 0.3s; font-family: var(--font-display);" [style.border-bottom-color]="currentTab === 'users' ? 'var(--gold)' : 'transparent'" [style.color]="currentTab === 'users' ? 'var(--gold)' : 'var(--text-soft)'">👥 Gestión de Usuarios</button>
     <button class="tab-btn" (click)="changeTab('rfid')" style="background: none; border: none; font-size: 1.1rem; padding: 5px 15px; cursor: pointer; color: var(--text); border-bottom: 2px solid transparent; outline: none; transition: all 0.3s; font-family: var(--font-display);" [style.border-bottom-color]="currentTab === 'rfid' ? 'var(--gold)' : 'transparent'" [style.color]="currentTab === 'rfid' ? 'var(--gold)' : 'var(--text-soft)'">📡 Peticiones RFID</button>
+    <button class="tab-btn" (click)="changeTab('settings')" style="background: none; border: none; font-size: 1.1rem; padding: 5px 15px; cursor: pointer; color: var(--text); border-bottom: 2px solid transparent; outline: none; transition: all 0.3s; font-family: var(--font-display);" [style.border-bottom-color]="currentTab === 'settings' ? 'var(--gold)' : 'transparent'" [style.color]="currentTab === 'settings' ? 'var(--gold)' : 'var(--text-soft)'">⚙️ Configuración</button>
   </div>
 
   <div *ngIf="currentTab === 'stats'" class="animate-fade-in">
@@ -365,6 +366,31 @@
           </tr>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- ===== SYSTEM CONFIGURATION TAB ===== -->
+  <div *ngIf="currentTab === 'settings' && isAdmin" class="user-management-panel animate-fade-in">
+    <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 20px;">⚙️ Configuración de la Plataforma</h2>
+    
+    <div class="card" style="padding: 24px; border: 1px solid var(--border-soft); border-radius: var(--r-md); background: var(--surface-2); margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 250px;">
+          <strong style="color: var(--text); font-size: 1.1rem; display: block; margin-bottom: 6px;">📷 Lector de Código de Barras por Cámara (ZXing)</strong>
+          <p style="font-size: 0.85rem; color: var(--text-soft); margin: 0; line-height: 1.4;">Habilita o deshabilita la cámara en los módulos de venta manuales y simulaciones. Si se deshabilita, la cámara estará oculta y se obligará al uso de la pistola lectora física (ej: SAT PCS).</p>
+        </div>
+        <div>
+          <button 
+            type="button" 
+            (click)="toggleCameraConfig()" 
+            style="padding: 10px 24px; border-radius: 6px; border: none; font-weight: 700; cursor: pointer; font-size: 0.95rem; transition: all 0.2s;"
+            [style.background]="cameraEnabled ? '#2ecc71' : '#ef4444'"
+            [style.color]="'white'"
+          >
+            {{ cameraEnabled ? '✓ HABILITADO' : '✗ DESHABILITADO' }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 

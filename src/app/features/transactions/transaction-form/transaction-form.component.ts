@@ -40,6 +40,7 @@ export class TransactionFormComponent implements OnInit, OnDestroy {
   scannedCode: string = '';
   scannedProduct: any = null;
   allProducts: any[] = [];
+  cameraEnabled: boolean = true;
 
   constructor(
     private fb: FormBuilder,
@@ -59,6 +60,7 @@ export class TransactionFormComponent implements OnInit, OnDestroy {
     this.role = localStorage.getItem('role') || '';
     this.userName = localStorage.getItem('name') || '';
     this.userId = Number(localStorage.getItem('userId')) || 0;
+    this.cameraEnabled = localStorage.getItem('camera_enabled') !== 'false';
 
     // Load products for barcode lookup
     this.productService.getAll().subscribe({
@@ -144,6 +146,7 @@ export class TransactionFormComponent implements OnInit, OnDestroy {
   // BARCODE SCANNER (ZXing — compatible con SAT PCS via cámara)
   // ================================================================
   async startScanner(): Promise<void> {
+    if (!this.cameraEnabled) return;
     this.scannerLoading = true;
     this.scannedCode = '';
     this.scannedProduct = null;
@@ -247,27 +250,18 @@ export class TransactionFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  submit(): void {
-    if (this.form.invalid) {
-      this.errorMessage = 'Por favor, complete todos los campos obligatorios.';
-      this.successMessage = '';
-      setTimeout(() => this.errorMessage = '', 3000);
-      return;
-    }
-
-    const val = this.form.value;
-    const prod = this.allProducts.find(p => p.name === val.product || p.barcode === val.product);
+  submitTransactionWithProduct(prod: any, quantity: number, price: number): void {
     const transaction = {
       status: 'COMPLETED',
-      total: val.quantity * val.price,
+      total: quantity * price,
       errors: 0,
       effectiveness: 100.0,
       date: new Date().toISOString(),
       details: [
         {
           product: prod ? { id: prod.id } : null,
-          quantity: val.quantity,
-          unitPrice: val.price,
+          quantity: quantity,
+          unitPrice: price,
           discountApplied: 0
         }
       ]
@@ -280,6 +274,14 @@ export class TransactionFormComponent implements OnInit, OnDestroy {
         this.form.reset();
         this.scannedCode = '';
         this.scannedProduct = null;
+        
+        // Focus the barcode gun input back
+        const gunInput = document.getElementById('barcode-gun-input');
+        if (gunInput) {
+          (gunInput as HTMLInputElement).value = '';
+          gunInput.focus();
+        }
+
         if (this.listComponent) this.listComponent.load();
         setTimeout(() => this.successMessage = '', 3000);
       },
@@ -289,5 +291,45 @@ export class TransactionFormComponent implements OnInit, OnDestroy {
         setTimeout(() => this.errorMessage = '', 3000);
       }
     });
+  }
+
+  submit(): void {
+    if (this.form.invalid) {
+      this.errorMessage = 'Por favor, complete todos los campos obligatorios.';
+      this.successMessage = '';
+      setTimeout(() => this.errorMessage = '', 3000);
+      return;
+    }
+
+    const val = this.form.value;
+    let prod = this.allProducts.find(p => 
+      p.name === val.product || 
+      (p.barcode && p.barcode.trim() === val.product.trim())
+    );
+
+    if (!prod) {
+      // Auto-create product in database first!
+      const barcode = this.scannedCode || val.product.trim();
+      const newProd = {
+        name: val.product,
+        price: Number(val.price),
+        stock: 50,
+        barcode: barcode,
+        active: true
+      };
+
+      this.productService.create(newProd).subscribe({
+        next: (created) => {
+          this.allProducts.push(created);
+          this.submitTransactionWithProduct(created, Number(val.quantity), Number(val.price));
+        },
+        error: () => {
+          this.errorMessage = 'Error al crear el nuevo producto en el catálogo';
+          setTimeout(() => this.errorMessage = '', 3000);
+        }
+      });
+    } else {
+      this.submitTransactionWithProduct(prod, Number(val.quantity), Number(val.price));
+    }
   }
 }
