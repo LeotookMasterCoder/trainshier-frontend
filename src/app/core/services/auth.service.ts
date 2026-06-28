@@ -96,6 +96,27 @@ export class AuthService {
     return this.http.post<any>(`${this.apiUrl}/recover-password`, data);
   }
 
+  /** TRN Registration requests */
+  requestTrnCode(instructorId: number, studentName: string, studentEmail: string): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/auth/trn-requests`, { instructorId, studentName, studentEmail });
+  }
+
+  checkTrnStatus(studentEmail: string): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/auth/trn-requests/check?email=${studentEmail}`);
+  }
+
+  getPendingTrnRequests(instructorId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/trn-requests/instructor/${instructorId}`);
+  }
+
+  approveTrnRequest(id: number): Observable<any> {
+    return this.http.put<any>(`${environment.apiUrl}/trn-requests/${id}/approve`, {});
+  }
+
+  rejectTrnRequest(id: number): Observable<any> {
+    return this.http.put<any>(`${environment.apiUrl}/trn-requests/${id}/reject`, {});
+  }
+
   /**
    * Returns the list of instructors from the public endpoint.
    * No JWT token needed - used by the apprentice registration form.

@@ -31,6 +31,12 @@ export class RegisterComponent implements OnInit {
   trnCodeInput = '';
   generatedTrnCode = '';
 
+  trnStudentName = '';
+  trnStudentEmail = '';
+  hasRequestedCode = false;
+  trnRequestStatus = '';
+  checkingStatus = false;
+
   constructor(
     private fb:FormBuilder,
     private router:Router,
@@ -124,11 +130,13 @@ export class RegisterComponent implements OnInit {
 
   autofill(): void {
     const random = Math.floor(1000 + Math.random() * 9000);
+    this.trnStudentName = 'Aprendiz Simulado';
+    this.trnStudentEmail = `aprendiz.simulado.${random}@trainshier.com`;
     this.form.patchValue({
-      fullName: 'Cajero Aprendiz Simulado',
+      fullName: this.trnStudentName,
       username: `cajero${random}#${random}`,
       role: 'aprendiz',
-      email: `cajero.simulado.${random}@trainshier.com`,
+      email: this.trnStudentEmail,
       password: 'Password123*'
     });
   }
@@ -185,19 +193,60 @@ export class RegisterComponent implements OnInit {
   }
 
   pedirCodigo(): void {
+    if (!this.trnStudentName || !this.trnStudentEmail) {
+      this.errorMessage = 'Por favor ingresa tu nombre y correo para solicitar el código';
+      return;
+    }
     if (!this.selectedInstructorId) {
       this.errorMessage = 'Por favor selecciona un instructor';
       return;
     }
     this.requestingCode = true;
     this.errorMessage = '';
-    
-    // Simular retraso de envío de notificación al instructor
-    setTimeout(() => {
-      this.requestingCode = false;
-      const rand = Math.floor(1000 + Math.random() * 9000);
-      this.generatedTrnCode = `TRN-${rand}`;
-    }, 1200);
+    this.successMessage = '';
+
+    this.authService.requestTrnCode(
+      this.selectedInstructorId,
+      this.trnStudentName,
+      this.trnStudentEmail
+    ).subscribe({
+      next: (response) => {
+        this.requestingCode = false;
+        this.hasRequestedCode = true;
+        this.successMessage = response.message || 'Solicitud de autorización TRN enviada correctamente. Espera a que el instructor la apruebe.';
+      },
+      error: (err) => {
+        this.requestingCode = false;
+        this.errorMessage = err.error?.message || 'Error al solicitar el código TRN al instructor.';
+      }
+    });
+  }
+
+  verificarEstado(): void {
+    if (!this.trnStudentEmail) return;
+    this.checkingStatus = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+
+    this.authService.checkTrnStatus(this.trnStudentEmail).subscribe({
+      next: (req) => {
+        this.checkingStatus = false;
+        this.trnRequestStatus = req.status;
+        if (req.status === 'APPROVED') {
+          this.generatedTrnCode = req.trnCode;
+          this.trnCodeInput = req.trnCode;
+          this.successMessage = '¡Tu solicitud ha sido aprobada por el instructor!';
+        } else if (req.status === 'PENDING') {
+          this.errorMessage = 'La solicitud sigue pendiente de aprobación por el instructor.';
+        } else if (req.status === 'REJECTED') {
+          this.errorMessage = 'La solicitud fue rechazada por el instructor.';
+        }
+      },
+      error: (err) => {
+        this.checkingStatus = false;
+        this.errorMessage = err.error?.message || 'No se encontró solicitud para este correo.';
+      }
+    });
   }
 
   copiarCodigo(): void {
@@ -213,6 +262,10 @@ export class RegisterComponent implements OnInit {
 
     if (this.trnCodeInput.trim().toUpperCase() === this.generatedTrnCode) {
       this.trnVerified = true;
+      this.form.patchValue({
+        fullName: this.trnStudentName,
+        email: this.trnStudentEmail
+      });
       this.successMessage = 'Código TRN validado con éxito. Ahora puedes completar tu registro.';
       setTimeout(() => {
         this.successMessage = '';

@@ -1,5 +1,6 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { CommentService } from '../../../core/services/comment.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-instructor-comments',
@@ -22,10 +23,19 @@ export class InstructorCommentsComponent implements OnInit {
   comments: any[] = [];
   loading: boolean = true;
 
-  constructor(private commentService: CommentService) {}
+  trnRequests: any[] = [];
+  trnLoading: boolean = false;
+  currentInstructorId: number = 0;
+
+  constructor(
+    private commentService: CommentService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
+    this.currentInstructorId = Number(localStorage.getItem('userId') || 0);
     this.loadComments();
+    this.loadTrnRequests();
   }
 
   loadComments(): void {
@@ -141,6 +151,51 @@ export class InstructorCommentsComponent implements OnInit {
     } else {
       this.comments.splice(index, 1);
     }
+  }
+
+  loadTrnRequests(): void {
+    if (!this.currentInstructorId) return;
+    this.trnLoading = true;
+    this.authService.getPendingTrnRequests(this.currentInstructorId).subscribe({
+      next: (reqs) => {
+        this.trnRequests = reqs;
+        this.trnLoading = false;
+      },
+      error: (err) => {
+        console.error('Error loading TRN requests:', err);
+        this.trnLoading = false;
+      }
+    });
+  }
+
+  approveTrn(id: number): void {
+    this.authService.approveTrnRequest(id).subscribe({
+      next: (res) => {
+        this.notification = `Solicitud aprobada. Código generado: ${res.trnCode}`;
+        this.loadTrnRequests();
+        setTimeout(() => this.notification = '', 4000);
+      },
+      error: (err) => {
+        console.error('Error approving TRN:', err);
+        this.notification = 'Error al aprobar la solicitud TRN.';
+        setTimeout(() => this.notification = '', 3000);
+      }
+    });
+  }
+
+  rejectTrn(id: number): void {
+    this.authService.rejectTrnRequest(id).subscribe({
+      next: () => {
+        this.notification = 'Solicitud rechazada.';
+        this.loadTrnRequests();
+        setTimeout(() => this.notification = '', 3000);
+      },
+      error: (err) => {
+        console.error('Error rejecting TRN:', err);
+        this.notification = 'Error al rechazar la solicitud TRN.';
+        setTimeout(() => this.notification = '', 3000);
+      }
+    });
   }
 
   exportEvaluation(): void {

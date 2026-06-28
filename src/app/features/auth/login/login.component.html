@@ -151,6 +151,12 @@
       <h3>Lectura de Tarjeta RFID</h3>
       <p>Desliza tu tarjeta física sobre el lector ahora.</p>
 
+      <div class="rfid-demos" style="margin: 15px 0; display: flex; justify-content: center; gap: 8px;">
+        <span class="tag" (click)="loginWithRfid('RFID-APPRENTICE-777')">🏷️ Aprendiz Demo</span>
+        <span class="tag" (click)="loginWithRfid('RFID-INSTRUCTOR-888')">🏷️ Instructor Principal</span>
+        <span class="tag" (click)="loginWithRfid('RFID-ADMIN-999')">🏷️ Administrador</span>
+      </div>
+
       <div class="rfid-manual-entry">
         <input
           #rfidManualInput

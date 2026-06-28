@@ -49,8 +49,35 @@
       <div class="trn-container animate-fade-in" *ngIf="!trnVerified">
         <p class="lead">Para registrarte como Aprendiz, primero solicita y valida un código de autorización TRN.</p>
 
+        <!-- Student Details -->
+        <div class="field" *ngIf="!hasRequestedCode">
+          <label for="trn-student-name">Tu nombre completo</label>
+          <div class="control">
+            <input 
+              id="trn-student-name"
+              type="text" 
+              [(ngModel)]="trnStudentName" 
+              placeholder="Juan Pérez"
+              required
+            >
+          </div>
+        </div>
+
+        <div class="field" *ngIf="!hasRequestedCode">
+          <label for="trn-student-email">Tu correo electrónico</label>
+          <div class="control">
+            <input 
+              id="trn-student-email"
+              type="email" 
+              [(ngModel)]="trnStudentEmail" 
+              placeholder="juan.perez@trainshier.com"
+              required
+            >
+          </div>
+        </div>
+
         <!-- Instructor Selection Filter -->
-        <div class="field">
+        <div class="field" *ngIf="!hasRequestedCode">
           <label for="trn-instructor">Selecciona un Instructor para solicitar el código</label>
           <div class="control">
             <select id="trn-instructor" [(ngModel)]="selectedInstructorId" style="width: 100%;">
@@ -64,22 +91,47 @@
           class="btn btn-primary main-btn" 
           type="button" 
           (click)="pedirCodigo()" 
-          [disabled]="requestingCode || !selectedInstructorId"
+          [disabled]="requestingCode || !selectedInstructorId || !trnStudentName || !trnStudentEmail"
+          *ngIf="!hasRequestedCode"
           style="margin-bottom: 20px; width: 100%;"
         >
           <span *ngIf="!requestingCode">Pedir código de autorización</span>
           <span *ngIf="requestingCode">Enviando solicitud al instructor...</span>
         </button>
 
-        <!-- Simulator Notification Box (Interactive Demonstration) -->
-        <div class="simulator-box animate-scale-in" *ngIf="generatedTrnCode">
+        <!-- Show Status check when request is submitted -->
+        <div class="simulator-box animate-scale-in" *ngIf="hasRequestedCode" style="margin-bottom: 20px;">
           <div class="sim-header" style="display: flex; justify-content: space-between; align-items: center; background: rgba(212, 175, 55, 0.1); padding: 8px 12px; border-radius: 6px 6px 0 0; border-bottom: 1px solid rgba(212,175,55,0.2);">
-            <span class="sim-badge" style="font-size: 0.75rem; background: var(--gold); color: var(--gold-ink); padding: 2px 6px; border-radius: 4px; font-weight: bold;">SIMULADOR</span>
-            <span class="sim-title" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Bandeja del Instructor</span>
+            <span class="sim-badge" style="font-size: 0.75rem; background: var(--gold); color: var(--gold-ink); padding: 2px 6px; border-radius: 4px; font-weight: bold;">SOLICITUD TRN</span>
+            <span class="sim-title" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Estado de la Petición</span>
           </div>
-          <div class="sim-body" style="padding: 12px; background: rgba(212,175,55,0.02); border: 1px solid rgba(212,175,55,0.1); border-top: none; border-radius: 0 0 6px 6px;">
-            <p style="margin: 0 0 8px 0; font-size: 0.85rem;">El instructor ha aprobado tu solicitud y ha generado un código TRN de autorización:</p>
-            <div class="generated-code-display" style="font-size: 1.25rem; font-weight: 800; color: #ffe259; text-align: center; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px; letter-spacing: 2px; margin-bottom: 8px;">
+          <div class="sim-body" style="padding: 15px; background: rgba(212,175,55,0.02); border: 1px solid rgba(212,175,55,0.1); border-top: none; border-radius: 0 0 6px 6px; text-align: center;">
+            <p style="margin: 0 0 12px 0; font-size: 0.88rem;">Tu solicitud ha sido enviada al instructor. Pídele que ingrese a su panel de control y apruebe tu registro.</p>
+            <div style="margin: 10px 0; font-weight: bold; color: var(--gold);">
+              Estado: {{ trnRequestStatus || 'PENDIENTE (PENDING)' }}
+            </div>
+            
+            <button 
+              class="btn btn-secondary" 
+              type="button" 
+              (click)="verificarEstado()" 
+              [disabled]="checkingStatus"
+              style="width: 100%; padding: 10px;"
+            >
+              {{ checkingStatus ? 'Consultando...' : '🔄 Verificar Estado de Aprobación' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Simulator Notification Box (Interactive Demonstration) -->
+        <div class="simulator-box animate-scale-in" *ngIf="generatedTrnCode" style="margin-top: 10px; margin-bottom: 20px;">
+          <div class="sim-header" style="display: flex; justify-content: space-between; align-items: center; background: rgba(46, 204, 113, 0.1); padding: 8px 12px; border-radius: 6px 6px 0 0; border-bottom: 1px solid rgba(46,204,113,0.2);">
+            <span class="sim-badge" style="font-size: 0.75rem; background: #2ecc71; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold;">AUTORIZADO</span>
+            <span class="sim-title" style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Código de Registro</span>
+          </div>
+          <div class="sim-body" style="padding: 12px; background: rgba(46,204,113,0.02); border: 1px solid rgba(46,204,113,0.1); border-top: none; border-radius: 0 0 6px 6px;">
+            <p style="margin: 0 0 8px 0; font-size: 0.85rem;">Copia este código o da clic al botón para validarlo y continuar:</p>
+            <div class="generated-code-display" style="font-size: 1.25rem; font-weight: 800; color: #2ecc71; text-align: center; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 4px; letter-spacing: 2px; margin-bottom: 8px;">
               {{ generatedTrnCode }}
             </div>
             <button class="btn btn-secondary btn-sm" type="button" (click)="copiarCodigo()" style="font-size: 0.75rem; padding: 4px 8px; width: 100%;">Copiar e ingresar automáticamente</button>

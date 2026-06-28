@@ -23,13 +23,8 @@ export class LoginComponent implements OnInit {
 
   @HostListener('window:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
-    // Only capture global inputs if we are not actively typing in an input field (to avoid intercepting email/password fields)
-    const activeElement = document.activeElement?.tagName;
-    if (activeElement === 'INPUT' || activeElement === 'TEXTAREA') {
-      return;
-    }
-
     const currentTime = Date.now();
+    const isFast = (currentTime - this.lastKeyTime) <= 50;
     
     // USB card readers simulate typing very fast (typically < 30ms between keystrokes)
     if (currentTime - this.lastKeyTime > 50) {
@@ -39,7 +34,27 @@ export class LoginComponent implements OnInit {
     this.lastKeyTime = currentTime;
 
     if (event.key >= '0' && event.key <= '9') {
-      this.rfidBuffer += event.key;
+      const activeElement = document.activeElement?.tagName;
+      if (activeElement === 'INPUT' || activeElement === 'TEXTAREA') {
+        const activeInput = document.activeElement as HTMLInputElement;
+        if (isFast || this.rfidBuffer === '') {
+          this.rfidBuffer += event.key;
+          if (isFast) {
+            event.preventDefault();
+            // Clean up the first character that got typed before we detected the fast scan
+            if (this.rfidBuffer.length === 2 && activeInput && activeInput.value) {
+              activeInput.value = activeInput.value.slice(0, -1);
+              activeInput.dispatchEvent(new Event('input'));
+            }
+          }
+        } else {
+          // Slow typing, reset buffer to this single digit
+          this.rfidBuffer = event.key;
+        }
+      } else {
+        // Outside input fields, accumulate normally
+        this.rfidBuffer += event.key;
+      }
     } else if (event.key === 'Enter') {
       if (this.rfidBuffer.length >= 8) {
         event.preventDefault();

@@ -111,9 +111,57 @@
     </ng-template>
   </div>
 
+  <!-- SOLICITUDES DE AUTORIZACIÓN TRN PENDIENTES -->
+  <div class="comments-container" style="margin-bottom: 30px; border: 1px solid var(--gold); background: rgba(212,175,55,0.02);">
+    <h2>🏷️ Solicitudes de Registro Pendientes (TRN)</h2>
+    <p style="font-size: 0.85rem; color: var(--text-soft); margin-bottom: 15px;">
+      Los aprendices listados abajo solicitaron tu autorización para registrarse en TrainShier.
+    </p>
+
+    <!-- Loading -->
+    <div *ngIf="trnLoading" style="text-align: center; padding: 15px; color: var(--text-soft);">
+      Cargando solicitudes...
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!trnLoading && trnRequests.length === 0" style="text-align: center; padding: 20px; color: var(--text-soft); font-size: 0.9rem;">
+      No tienes solicitudes de registro TRN pendientes.
+    </div>
+
+    <!-- List -->
+    <div class="comments-list" *ngIf="!trnLoading && trnRequests.length > 0" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px;">
+      <div 
+        class="comment-card" 
+        *ngFor="let item of trnRequests" 
+        style="background: var(--surface-2, rgba(255,255,255,0.02)); border: 1px solid var(--border); padding: 15px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between;"
+      >
+        <div>
+          <h3 style="margin: 0 0 5px 0; color: var(--text); font-size: 1rem; font-weight: bold;">{{ item.studentName }}</h3>
+          <p style="margin: 0 0 10px 0; font-size: 0.82rem; color: var(--text-soft); word-break: break-all;">📧 {{ item.studentEmail }}</p>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+          <button 
+            type="button" 
+            (click)="approveTrn(item.id)" 
+            style="flex: 1; background: #2ecc71; color: white; border: none; border-radius: 4px; padding: 8px; font-weight: bold; cursor: pointer; transition: background 0.2s;"
+          >
+            ✓ Aprobar
+          </button>
+          <button 
+            type="button" 
+            (click)="rejectTrn(item.id)" 
+            style="background: transparent; color: #ef4444; border: 1px solid #ef4444; border-radius: 4px; padding: 8px; cursor: pointer; transition: all 0.2s;"
+          >
+            ✗ Rechazar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- FORMULARIO DE NUEVA RETROALIMENTACIÓN -->
   <div class="comments-container">
-
+ 
     <h2>Nueva Retroalimentación</h2>
 
     <form (ngSubmit)="saveComment()">
