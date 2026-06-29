@@ -156,6 +156,8 @@ export class RegisterComponent implements OnInit {
 
       email:this.form.value.email,
 
+      username:this.form.value.username,
+
       password:this.form.value.password,
 
       role:this.form.value.role

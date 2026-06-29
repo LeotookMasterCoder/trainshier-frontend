@@ -55,6 +55,9 @@ export class AuthService {
             String(response.userId)
           );
 
+          localStorage.setItem('email', response.email || '');
+          localStorage.setItem('username', response.username || '');
+
           // Store login timestamp (represented in milliseconds)
           localStorage.setItem(
             'login_timestamp',
@@ -86,6 +89,8 @@ export class AuthService {
           localStorage.setItem('role', response.role);
           localStorage.setItem('name', response.name);
           localStorage.setItem('userId', String(response.userId));
+          localStorage.setItem('email', response.email || '');
+          localStorage.setItem('username', response.username || '');
           // Store login timestamp (represented in milliseconds)
           localStorage.setItem('login_timestamp', String(Date.now()));
         })

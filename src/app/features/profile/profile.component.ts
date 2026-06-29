@@ -98,14 +98,15 @@ export class ProfileComponent{
     const userIdNum = Number(this.userId);
     const updatePayload = {
       name: this.form.value.name,
-      email: this.form.value.email
+      email: this.form.value.email,
+      username: this.form.value.username
     };
     this.userService.update(userIdNum, updatePayload).subscribe({
       next: (updatedUser: any) => {
         // Save back to localStorage
         localStorage.setItem('name', updatedUser.name);
         localStorage.setItem('email', updatedUser.email);
-        localStorage.setItem('username', this.form.value.username || '');
+        localStorage.setItem('username', updatedUser.username || '');
         localStorage.setItem('birthDate', this.form.value.birthDate || '');
 
         // Update class property

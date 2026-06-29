@@ -127,11 +127,9 @@
 
       </form>
 
-      <div
-        class="success-alert"
-        *ngIf="showSuccess"
-      >
-        Información actualizada correctamente.
+      <div class="alert success show animate-scale-in" *ngIf="showSuccess" style="margin-top: 20px; background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.9rem;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width: 20px; height: 20px; flex-shrink: 0;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <span>¡Cambios guardados con éxito! Se actualizó tu perfil en la base de datos.</span>
       </div>
 
       <!-- SECCIÓN DE SOPORTE Y SOLICITUDES (ADMIN NOTIFICATIONS) -->
