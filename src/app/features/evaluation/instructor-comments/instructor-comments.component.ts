@@ -1,6 +1,7 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { CommentService } from '../../../core/services/comment.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { UserService } from '../../../core/services/user.service';
 
 @Component({
   selector: 'app-instructor-comments',
@@ -27,15 +28,23 @@ export class InstructorCommentsComponent implements OnInit {
   trnLoading: boolean = false;
   currentInstructorId: number = 0;
 
+  // Autocomplete properties
+  apprentices: any[] = [];
+  filteredApprentices: any[] = [];
+  searchQuery: string = '';
+  showSuggestions: boolean = false;
+
   constructor(
     private commentService: CommentService,
-    private authService: AuthService
+    private authService: AuthService,
+    private userService: UserService
   ) {}
 
   ngOnInit(): void {
     this.currentInstructorId = Number(localStorage.getItem('userId') || 0);
     this.loadComments();
     this.loadTrnRequests();
+    this.loadApprentices();
   }
 
   loadComments(): void {
@@ -112,7 +121,7 @@ export class InstructorCommentsComponent implements OnInit {
         let notifs = savedNotifs ? JSON.parse(savedNotifs) : [];
         notifs.push({
           id: String(Date.now()),
-          role: 'APPRENTICE',
+          role: 'APRENDIZ',
           message: `📋 El instructor calificó tu simulación de "${this.comment.module}" con un puntaje de ${this.comment.score}.`,
           actionText: 'Ver Calificación',
           route: '/evaluation',
@@ -123,6 +132,7 @@ export class InstructorCommentsComponent implements OnInit {
         this.loadComments();
         this.notification = 'Evaluación guardada correctamente.';
         this.comment = { studentName: '', module: '', score: '', state: '', feedback: '', errors: '' };
+        this.searchQuery = '';
         setTimeout(() => this.notification = '', 3000);
       },
       error: (err) => {
@@ -131,6 +141,44 @@ export class InstructorCommentsComponent implements OnInit {
         setTimeout(() => this.notification = '', 3000);
       }
     });
+  }
+
+  // Autocomplete filter helpers
+  loadApprentices(): void {
+    this.userService.getAll().subscribe({
+      next: (users) => {
+        this.apprentices = users.filter(u => u.role?.toUpperCase() === 'APRENDIZ');
+        this.filteredApprentices = [...this.apprentices];
+      },
+      error: (err) => {
+        console.error('Error loading apprentices:', err);
+      }
+    });
+  }
+
+  filterApprentices(): void {
+    const query = this.searchQuery ? this.searchQuery.toLowerCase().trim() : '';
+    if (!query) {
+      this.filteredApprentices = [...this.apprentices];
+    } else {
+      this.filteredApprentices = this.apprentices.filter(a =>
+        a.name?.toLowerCase().includes(query) || a.email?.toLowerCase().includes(query)
+      );
+    }
+    // Set studentName to query while typing to maintain model state
+    this.comment.studentName = this.searchQuery;
+  }
+
+  selectApprentice(app: any): void {
+    this.comment.studentName = app.name;
+    this.searchQuery = app.name;
+    this.showSuggestions = false;
+  }
+
+  hideSuggestionsWithDelay(): void {
+    setTimeout(() => {
+      this.showSuggestions = false;
+    }, 200);
   }
 
   deleteComment(index: number): void {

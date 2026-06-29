@@ -166,11 +166,33 @@
 
     <form (ngSubmit)="saveComment()">
 
-      <input
-        type="text"
-        placeholder="Nombre del aprendiz *"
-        [(ngModel)]="comment.studentName"
-        name="studentName">
+      <!-- Autocomplete dropdown search for apprentice -->
+      <div class="field" style="position: relative; margin-bottom: 15px;">
+        <input
+          type="text"
+          placeholder="Escribe para buscar y elegir aprendiz *"
+          [(ngModel)]="searchQuery"
+          name="searchQuery"
+          (input)="filterApprentices()"
+          (focus)="showSuggestions = true"
+          (blur)="hideSuggestionsWithDelay()"
+          autocomplete="off"
+          style="width: 100%;"
+          required>
+        
+        <div class="autocomplete-dropdown" *ngIf="showSuggestions && filteredApprentices.length > 0" 
+             style="position: absolute; width: 100%; max-height: 200px; overflow-y: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.3); margin-top: 4px;">
+          <div *ngFor="let app of filteredApprentices" 
+               (click)="selectApprentice(app)" 
+               class="suggestion-item" 
+               style="padding: 10px 12px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.88rem; transition: background 0.2s;"
+               onmouseover="this.style.background='rgba(212,175,55,0.1)'"
+               onmouseout="this.style.background='transparent'">
+            <div style="font-weight: bold; color: var(--text);">{{ app.name }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-soft);">{{ app.email }}</div>
+          </div>
+        </div>
+      </div>
 
       <input
         type="text"
