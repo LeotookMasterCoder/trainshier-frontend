@@ -149,11 +149,12 @@ export class NavbarComponent{
   }
 
   logout():void{
-
-    localStorage.clear();
-
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('name');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('login_timestamp');
     this.router.navigate(['/dashboard']);
-
   }
 
   @HostListener('window:storage', ['$event'])

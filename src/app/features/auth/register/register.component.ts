@@ -247,6 +247,7 @@ export class RegisterComponent implements OnInit {
         this.trnRequestStatus = req.status;
         if (req.status === 'APPROVED') {
           this.generatedTrnCode = req.trnCode;
+          this.generatedId = req.trnCode; // Sync left brandside panel display
           this.trnCodeInput = req.trnCode;
           this.successMessage = '¡Tu solicitud ha sido aprobada por el instructor!';
         } else if (req.status === 'PENDING') {
@@ -275,6 +276,7 @@ export class RegisterComponent implements OnInit {
 
     if (this.trnCodeInput.trim().toUpperCase() === this.generatedTrnCode) {
       this.trnVerified = true;
+      this.generatedId = this.generatedTrnCode; // Sync left brandside panel display
       this.form.patchValue({
         fullName: this.trnStudentName,
         email: this.trnStudentEmail

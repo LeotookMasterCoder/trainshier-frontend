@@ -149,9 +149,11 @@ export class AuthService {
   }
 
   logout(): void {
-
-    localStorage.clear();
-
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('name');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('login_timestamp');
   }
 
 }
