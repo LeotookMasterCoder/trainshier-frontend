@@ -149,6 +149,22 @@ export class RecoverPasswordComponent implements OnInit {
     });
   }
 
+  resendCode(): void {
+    this.errorMessage = '';
+    this.successMessage = 'Reenviando código de verificación...';
+    const email = this.form.get('email')?.value || '';
+    this.authService.requestRecoveryCode(email).subscribe({
+      next: (res: any) => {
+        this.successMessage = res.message || 'Código de verificación reenviado.';
+        this.errorMessage = '';
+      },
+      error: (err: any) => {
+        this.successMessage = '';
+        this.errorMessage = err.error?.message || 'Error al reenviar el código.';
+      }
+    });
+  }
+
   back(): void {
     if (this.currentStep > 1) {
       this.currentStep--;

@@ -34,6 +34,9 @@ export class InstructorCommentsComponent implements OnInit {
   searchQuery: string = '';
   showSuggestions: boolean = false;
 
+  isInstructor: boolean = false;
+  isApprentice: boolean = false;
+
   constructor(
     private commentService: CommentService,
     private authService: AuthService,
@@ -41,10 +44,17 @@ export class InstructorCommentsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    const role = localStorage.getItem('role') || 'APRENDIZ';
+    this.isInstructor = role.toUpperCase() === 'INSTRUCTOR';
+    this.isApprentice = role.toUpperCase() === 'APRENDIZ';
+
     this.currentInstructorId = Number(localStorage.getItem('userId') || 0);
     this.loadComments();
-    this.loadTrnRequests();
-    this.loadApprentices();
+    
+    if (this.isInstructor) {
+      this.loadTrnRequests();
+      this.loadApprentices();
+    }
   }
 
   loadComments(): void {
@@ -78,6 +88,12 @@ export class InstructorCommentsComponent implements OnInit {
             date: item.date ? item.date.split('T')[0] : new Date().toLocaleDateString()
           };
         });
+
+        if (this.isApprentice) {
+          const studentName = localStorage.getItem('name') || '';
+          this.comments = this.comments.filter(c => c.studentName?.toLowerCase() === studentName.toLowerCase());
+        }
+
         this.loading = false;
       },
       error: (err) => {
