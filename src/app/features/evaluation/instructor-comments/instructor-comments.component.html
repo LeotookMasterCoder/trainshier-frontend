@@ -245,7 +245,7 @@
  
     <div class="history-header">
       <h2>{{ isInstructor ? 'Historial de Evaluaciones' : 'Mis Calificaciones y Retroalimentaciones' }}</h2>
-      <input *ngIf="isInstructor" type="text" placeholder="Buscar aprendiz...">
+      <input *ngIf="isInstructor" type="text" placeholder="Buscar aprendiz..." [(ngModel)]="historyFilterQuery" (input)="applyHistoryFilter()">
     </div>
  
     <!-- Loading -->
@@ -264,7 +264,7 @@
       <!-- Lista de evaluaciones reales -->
       <div
         class="comment-card"
-        *ngFor="let item of comments; let i = index">
+        *ngFor="let item of filteredComments; let i = index">
  
         <div class="card-top">
           <h2>{{ item.studentName }}</h2>

@@ -133,7 +133,7 @@
       </div>
 
       <!-- SECCIÓN DE SOPORTE Y SOLICITUDES (ADMIN NOTIFICATIONS) -->
-      <div class="support-section" style="margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px;">
+      <div class="support-section" *ngIf="role.toUpperCase() !== 'ADMIN' && role.toUpperCase() !== 'ADMINISTRADOR'" style="margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px;">
         <h2 style="color: #fff; font-size: 1.4rem; font-weight: 700; margin-bottom: 5px;">Solicitudes y Soporte Técnico</h2>
         <p style="color: #cbd5e0; font-size: 0.9rem; margin-bottom: 20px;">Envía solicitudes directamente al administrador de la plataforma.</p>
         

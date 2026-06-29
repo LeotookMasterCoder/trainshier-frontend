@@ -37,6 +37,10 @@ export class InstructorCommentsComponent implements OnInit {
   isInstructor: boolean = false;
   isApprentice: boolean = false;
 
+  // History filtering
+  historyFilterQuery: string = '';
+  filteredComments: any[] = [];
+
   constructor(
     private commentService: CommentService,
     private authService: AuthService,
@@ -94,12 +98,14 @@ export class InstructorCommentsComponent implements OnInit {
           this.comments = this.comments.filter(c => c.studentName?.toLowerCase() === studentName.toLowerCase());
         }
 
+        this.applyHistoryFilter();
         this.loading = false;
       },
       error: (err) => {
         console.error('Error loading comments:', err);
         const saved = localStorage.getItem('comments');
         this.comments = saved ? JSON.parse(saved) : [];
+        this.applyHistoryFilter();
         this.loading = false;
       }
     });
@@ -197,8 +203,19 @@ export class InstructorCommentsComponent implements OnInit {
     }, 200);
   }
 
+  applyHistoryFilter(): void {
+    const q = this.historyFilterQuery ? this.historyFilterQuery.toLowerCase().trim() : '';
+    if (!q) {
+      this.filteredComments = [...this.comments];
+    } else {
+      this.filteredComments = this.comments.filter(c =>
+        c.studentName?.toLowerCase().includes(q) || c.module?.toLowerCase().includes(q)
+      );
+    }
+  }
+
   deleteComment(index: number): void {
-    const target = this.comments[index];
+    const target = this.filteredComments[index];
     if (target && target.id) {
       this.commentService.delete(target.id).subscribe({
         next: () => {
@@ -207,13 +224,17 @@ export class InstructorCommentsComponent implements OnInit {
           setTimeout(() => this.notification = '', 3000);
         },
         error: () => {
-          this.comments.splice(index, 1);
+          const mainIdx = this.comments.indexOf(target);
+          if (mainIdx > -1) this.comments.splice(mainIdx, 1);
+          this.filteredComments.splice(index, 1);
           this.notification = 'Evaluación eliminada localmente.';
           setTimeout(() => this.notification = '', 3000);
         }
       });
     } else {
-      this.comments.splice(index, 1);
+      const mainIdx = this.comments.indexOf(target);
+      if (mainIdx > -1) this.comments.splice(mainIdx, 1);
+      this.filteredComments.splice(index, 1);
     }
   }
 
@@ -302,16 +323,16 @@ export class InstructorCommentsComponent implements OnInit {
   }
 
   getApprovedCount(): number {
-    return this.comments.filter(c => c.state === 'Aprobado').length;
+    return this.filteredComments.filter(c => c.state === 'Aprobado').length;
   }
 
   getRejectedCount(): number {
-    return this.comments.filter(c => c.state === 'No aprobado').length;
+    return this.filteredComments.filter(c => c.state === 'No aprobado').length;
   }
 
   getAverageScore(): number {
-    if (this.comments.length === 0) return 0;
-    const total = this.comments.reduce((sum, item) => sum + Number(item.score), 0);
-    return Math.round(total / this.comments.length);
+    if (this.filteredComments.length === 0) return 0;
+    const total = this.filteredComments.reduce((sum, item) => sum + Number(item.score), 0);
+    return Math.round(total / this.filteredComments.length);
   }
 }
