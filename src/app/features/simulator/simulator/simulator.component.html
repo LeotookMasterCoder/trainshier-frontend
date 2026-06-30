@@ -508,7 +508,14 @@
   <!-- APERTURA DE CAJA MODAL OVERLAY -->
   <div class="rfid-modal-overlay" *ngIf="showAperturaModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; align-items: center; justify-content: center;">
     <div class="rfid-modal animate-scale-in" style="background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; max-width: 450px; width: 90%; padding: 30px; box-shadow: var(--shadow-lg); text-align: center;">
-      <h3 style="margin: 0 0 10px 0; color: var(--gold); font-size: 1.4rem; font-weight: 700;">💼 Apertura de Caja Registradora</h3>
+      <!-- Custom Cash Opening Logo -->
+      <div style="width: 65px; height: 65px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(99,102,241,0.02) 70%); border: 1.5px solid rgba(99,102,241,0.4); border-radius: 50%; box-shadow: 0 6px 20px rgba(99,102,241,0.2);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 30px; height: 30px;">
+          <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+          <line x1="12" y1="4" x2="12" y2="20"></line>
+        </svg>
+      </div>
+      <h3 style="margin: 0 0 10px 0; color: var(--gold); font-size: 1.4rem; font-weight: 700;">Apertura de Caja Registradora</h3>
       <p style="margin: 0 0 20px 0; font-size: 0.9rem; color: var(--text-soft); line-height: 1.4;">Establece el dinero base inicial que tienes en la caja física antes de iniciar la jornada de simulación.</p>
       
       <div style="margin-bottom: 25px; text-align: left;">
@@ -543,7 +550,14 @@
   <!-- ARQUEO DE CAJA / CIERRE MODAL OVERLAY -->
   <div class="rfid-modal-overlay" *ngIf="showArqueoModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; align-items: center; justify-content: center; overflow-y: auto;">
     <div class="rfid-modal animate-scale-in" style="background: var(--surface); border: 1px solid var(--border-soft); border-radius: 16px; max-width: 550px; width: 90%; padding: 35px; box-shadow: var(--shadow-lg); text-align: center; margin: 20px auto;">
-      <h3 style="margin: 0 0 10px 0; color: var(--gold); font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px;">📊 Arqueo y Conciliación de Caja</h3>
+      <!-- Custom Cash Audit Logo -->
+      <div style="width: 75px; height: 75px; margin: 0 auto 18px; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, rgba(212,175,55,0.02) 70%); border: 2px solid rgba(212,175,55,0.4); border-radius: 50%; box-shadow: 0 8px 25px rgba(212,175,55,0.25);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 34px; height: 34px; filter: drop-shadow(0 2px 6px rgba(212,175,55,0.35));">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 6v6l4 2"></path>
+        </svg>
+      </div>
+      <h3 style="margin: 0 0 10px 0; color: var(--gold); font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px;">Arqueo y Conciliación de Caja</h3>
       <p style="margin: 0 0 25px 0; font-size: 0.9rem; color: var(--text-soft); line-height: 1.4;">Finalización de jornada comercial. Realiza el conteo físico de billetes y monedas en la gaveta y compáralo con el saldo esperado.</p>
       
       <!-- Detalle de cuentas en formato ticket/business model -->

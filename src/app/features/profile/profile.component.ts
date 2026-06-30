@@ -36,6 +36,7 @@ export class ProfileComponent{
   }
 
   isLoggedIn: boolean = false;
+  today: string = new Date().toISOString().split('T')[0];
   solicitudRol: string = 'instructor';
   reporteError: string = '';
   supportSuccessMessage: string = '';
@@ -93,8 +94,19 @@ export class ProfileComponent{
       this.form.markAllAsTouched();
       return;
     }
-
     this.errorMessage = '';
+
+    const bday = this.form.value.birthDate;
+    if (bday) {
+      const selected = new Date(bday);
+      const todayDate = new Date();
+      selected.setHours(0, 0, 0, 0);
+      todayDate.setHours(0, 0, 0, 0);
+      if (selected > todayDate) {
+        this.errorMessage = 'La fecha de nacimiento no puede ser en el futuro.';
+        return;
+      }
+    }
     const userIdNum = Number(this.userId);
     const updatePayload = {
       name: this.form.value.name,

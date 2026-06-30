@@ -12,6 +12,7 @@ interface Product {
   name: string;
   price: number;
   stock: number;
+  iva?: number;
 }
 
 interface CartItem {
@@ -20,6 +21,7 @@ interface CartItem {
   price: number;
   quantity: number;
   subtotal: number;
+  iva?: number;
 }
 
 interface Sale {
@@ -390,7 +392,7 @@ export class SimulatorComponent implements OnInit {
       CALENDARIO COMERCIAL
   ========================================= */
   updateSpecialDay(): void {
-    const date = new Date(this.saleDate);
+    const date = new Date(this.saleDate + 'T00:00:00');
     const day = date.getDate();
     const month = date.getMonth() + 1;
 
@@ -403,12 +405,24 @@ export class SimulatorComponent implements OnInit {
     } else if (month === 2 && day === 14) {
       this.specialEvent = 'San Valentín';
       this.specialDiscount = 10;
+    } else if (month === 5 && day === 10) {
+      this.specialEvent = 'Día de la Madre';
+      this.specialDiscount = 15;
+    } else if (month === 6 && day === 21) {
+      this.specialEvent = 'Día del Padre';
+      this.specialDiscount = 15;
     } else if (month === 10 && day === 31) {
       this.specialEvent = 'Halloween';
       this.specialDiscount = 15;
+    } else if (month === 11 && day === 27) {
+      this.specialEvent = 'Viernes Negro';
+      this.specialDiscount = 30;
     } else if (month === 12 && day === 24) {
       this.specialEvent = 'Navidad';
       this.specialDiscount = 20;
+    } else if (month === 12 && day === 31) {
+      this.specialEvent = 'Fin de Año';
+      this.specialDiscount = 25;
     }
   }
 
@@ -636,7 +650,8 @@ export class SimulatorComponent implements OnInit {
         name: product.name,
         price: product.price,
         quantity: 1,
-        subtotal: product.price
+        subtotal: product.price,
+        iva: product.iva
       });
     }
 
@@ -675,12 +690,14 @@ export class SimulatorComponent implements OnInit {
   ========================================= */
   calculateTotals(): void {
     this.subtotal = 0;
+    this.ivaValue = 0;
 
     this.cart.forEach(item => {
       this.subtotal += item.subtotal;
+      const ivaPct = item.iva !== undefined && item.iva !== null ? item.iva : 19;
+      this.ivaValue += item.subtotal * (ivaPct / 100);
     });
 
-    this.ivaValue = this.subtotal * (this.ivaPercentage / 100);
     this.discountValue = this.subtotal * (this.specialDiscount / 100);
     this.totalToPay = this.subtotal + this.ivaValue - this.discountValue;
 
