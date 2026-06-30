@@ -149,25 +149,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 48px; height: 48px; color: var(--accent);"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
       </div>
       <h3>Lectura de Tarjeta RFID</h3>
-      <p>Desliza tu tarjeta física sobre el lector ahora.</p>
-
-      <div class="rfid-demos" style="margin: 15px 0; display: flex; justify-content: center; gap: 8px;">
-        <span class="tag" (click)="loginWithRfid('RFID-APPRENTICE-777')">🏷️ Aprendiz Demo</span>
-        <span class="tag" (click)="loginWithRfid('RFID-INSTRUCTOR-888')">🏷️ Instructor Principal</span>
-        <span class="tag" (click)="loginWithRfid('RFID-ADMIN-999')">🏷️ Administrador</span>
-      </div>
-
-      <div class="rfid-manual-entry">
-        <input
-          #rfidManualInput
-          type="text"
-          placeholder="Código de Tarjeta RFID"
-          class="manual-rfid-input"
-          [value]="rfidInput"
-          (input)="rfidInput = rfidManualInput.value"
-          (keyup.enter)="loginWithRfid(rfidManualInput.value)"
-        >
-      </div>
+      <p style="color: var(--text-soft); font-size: 0.95rem; margin-bottom: 25px;">Aproxima tu tarjeta física al lector de tarjetas RFID ahora para iniciar sesión.</p>
 
       <div class="rfid-actions">
         <button type="button" class="btn btn-secondary" (click)="showRfidModal = false">Cancelar</button>

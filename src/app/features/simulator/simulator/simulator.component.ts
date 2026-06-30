@@ -66,6 +66,15 @@ export class SimulatorComponent implements OnInit {
   successMessage = '';
   errorMessage = '';
 
+  // Arqueo de Caja variables
+  showAperturaModal = false;
+  initialCash = 100000;
+  cashSalesTotal = 0;
+  cardSalesTotal = 0;
+  showArqueoModal = false;
+  physicalCashCount: number | null = null;
+  arqueoResult: any = null;
+
   score = 0;
   salesCount = 0;
   servedProducts = 0;
@@ -762,6 +771,13 @@ export class SimulatorComponent implements OnInit {
     this.saveProducts();
     this.saveSalesHistory();
 
+    // Accumulate sales for Arqueo de Caja
+    if (this.paymentMethod === 'Efectivo') {
+      this.cashSalesTotal += this.totalToPay;
+    } else {
+      this.cardSalesTotal += this.totalToPay;
+    }
+
     this.salesCount++;
     this.servedProducts += this.cart.length;
     this.score += 100;
@@ -801,6 +817,70 @@ export class SimulatorComponent implements OnInit {
       this.score -= 5;
       this.customerSatisfaction -= 5;
     }
+  }
+
+  /* =========================================
+      ARQUEO DE CAJA (BUSINESS WORKFLOWS)
+  ========================================= */
+  openAperturaModal(): void {
+    if (this.role === 'OBSERVADOR') {
+      this.showToast('Los observadores no pueden iniciar la simulación.', true);
+      return;
+    }
+    this.initialCash = 100000; // default 100K COP
+    this.showAperturaModal = true;
+  }
+
+  confirmApertura(): void {
+    this.showAperturaModal = false;
+    this.cashSalesTotal = 0;
+    this.cardSalesTotal = 0;
+    this.physicalCashCount = null;
+    this.arqueoResult = null;
+    this.startSimulation();
+  }
+
+  openArqueoModal(): void {
+    clearInterval(this.timer);
+    this.physicalCashCount = null;
+    this.arqueoResult = null;
+    this.showArqueoModal = true;
+  }
+
+  cancelArqueo(): void {
+    this.showArqueoModal = false;
+    if (this.timeLeft > 0) {
+      this.startTimerForCurrentCustomer();
+    }
+  }
+
+  calculateArqueo(): void {
+    if (this.physicalCashCount === null || this.physicalCashCount === undefined) {
+      this.showToast('Por favor, ingresa el dinero físico contado.', true);
+      return;
+    }
+    const expected = this.initialCash + this.cashSalesTotal;
+    const diff = this.physicalCashCount - expected;
+    let status = 'CUADRADO';
+    let msg = '✓ Caja totalmente cuadrada. ¡Excelente trabajo!';
+    if (diff > 0) {
+      status = 'SOBRANTE';
+      msg = `⚠️ Sobrante en caja de $${diff.toLocaleString()} COP. Revisa si olvidaste entregar cambio.`;
+    } else if (diff < 0) {
+      status = 'FALTANTE';
+      msg = `❌ Faltante en caja de $${Math.abs(diff).toLocaleString()} COP. Revisa los cobros realizados.`;
+    }
+    this.arqueoResult = {
+      expected: expected,
+      difference: diff,
+      status: status,
+      message: msg
+    };
+  }
+
+  submitArqueoAndFinish(): void {
+    this.showArqueoModal = false;
+    this.finishSimulation();
   }
 
   /* =========================================

@@ -174,19 +174,14 @@
           <tr *ngFor="let product of filteredProducts | slice:0:visibleProductsCount">
             <td>{{ product.code }}</td>
             <td>
-              <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <small style="font-family: monospace;">{{ product.barcode || 'N/A' }}</small>
-                <button 
+              <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 4px 0;">
+                <img 
                   *ngIf="product.barcode"
-                  type="button"
-                  (click)="showBarcodeModal(product.barcode, product.name)"
-                  title="Mostrar Código de Barras"
-                  style="background: none; border: none; padding: 2px; cursor: pointer; color: var(--accent); font-size: 1.1rem; line-height: 1; transition: transform 0.2s;"
-                  onmouseover="this.style.transform='scale(1.2)'"
-                  onmouseout="this.style.transform='scale(1)'"
+                  [src]="'https://bwipjs-api.metafloor.com/?bcid=code128&text=' + product.barcode.trim() + '&scale=2&rotate=N&includetext'" 
+                  alt="Barcode" 
+                  style="max-width: 120px; height: 32px; display: block; border-radius: 4px; border: 1px solid #ddd; padding: 2px; background: white;"
                 >
-                  🏷️
-                </button>
+                <small style="font-family: monospace; color: var(--text-soft); font-size: 0.75rem;">{{ product.barcode || 'N/A' }}</small>
               </div>
             </td>
             <td>{{ product.name }}</td>
@@ -440,8 +435,8 @@
 
       <!-- CONTROLES GLOBALES DE LA COMPRA -->
       <div class="actions vertical-actions">
-        <button class="primary-btn" *ngIf="!simulationStarted" (click)="startSimulation()">Iniciar Simulación</button>
-        <button class="danger-btn" *ngIf="simulationStarted" (click)="finishSimulation()">Finalizar</button>
+        <button class="primary-btn" *ngIf="!simulationStarted" (click)="openAperturaModal()">Iniciar Simulación</button>
+        <button class="danger-btn" *ngIf="simulationStarted" (click)="openArqueoModal()">Finalizar y Hacer Arqueo</button>
       </div>
 
     </div>
@@ -505,6 +500,145 @@
           onmouseout="this.style.background='var(--accent)'"
         >
           Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- APERTURA DE CAJA MODAL OVERLAY -->
+  <div class="rfid-modal-overlay" *ngIf="showAperturaModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; align-items: center; justify-content: center;">
+    <div class="rfid-modal animate-scale-in" style="background: var(--surface); border: 1px solid var(--border-soft); border-radius: 12px; max-width: 450px; width: 90%; padding: 30px; box-shadow: var(--shadow-lg); text-align: center;">
+      <h3 style="margin: 0 0 10px 0; color: var(--gold); font-size: 1.4rem; font-weight: 700;">💼 Apertura de Caja Registradora</h3>
+      <p style="margin: 0 0 20px 0; font-size: 0.9rem; color: var(--text-soft); line-height: 1.4;">Establece el dinero base inicial que tienes en la caja física antes de iniciar la jornada de simulación.</p>
+      
+      <div style="margin-bottom: 25px; text-align: left;">
+        <label style="display: block; font-size: 0.85rem; color: var(--text-soft); margin-bottom: 8px; font-weight: 600;">Monto de Apertura (COP):</label>
+        <input 
+          type="number" 
+          [(ngModel)]="initialCash" 
+          placeholder="Ej. 100000"
+          style="width: 100%; padding: 12px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border-soft); border-radius: 8px; outline: none; font-size: 1.1rem; font-weight: 700; box-sizing: border-box;"
+        >
+      </div>
+
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button 
+          type="button" 
+          (click)="showAperturaModal = false" 
+          style="background: transparent; color: var(--text-soft); border: 1px solid var(--border-soft); padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem;"
+        >
+          Cancelar
+        </button>
+        <button 
+          type="button" 
+          (click)="confirmApertura()" 
+          style="background: var(--accent); color: white; border: none; padding: 10px 25px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem;"
+        >
+          Confirmar e Iniciar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARQUEO DE CAJA / CIERRE MODAL OVERLAY -->
+  <div class="rfid-modal-overlay" *ngIf="showArqueoModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; align-items: center; justify-content: center; overflow-y: auto;">
+    <div class="rfid-modal animate-scale-in" style="background: var(--surface); border: 1px solid var(--border-soft); border-radius: 16px; max-width: 550px; width: 90%; padding: 35px; box-shadow: var(--shadow-lg); text-align: center; margin: 20px auto;">
+      <h3 style="margin: 0 0 10px 0; color: var(--gold); font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px;">📊 Arqueo y Conciliación de Caja</h3>
+      <p style="margin: 0 0 25px 0; font-size: 0.9rem; color: var(--text-soft); line-height: 1.4;">Finalización de jornada comercial. Realiza el conteo físico de billetes y monedas en la gaveta y compáralo con el saldo esperado.</p>
+      
+      <!-- Detalle de cuentas en formato ticket/business model -->
+      <div style="background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 12px; padding: 20px; text-align: left; margin-bottom: 25px; font-family: monospace; font-size: 0.9rem; line-height: 1.6; color: var(--text);">
+        <div style="text-align: center; font-weight: 800; border-bottom: 1px dashed var(--border-soft); padding-bottom: 10px; margin-bottom: 15px; font-size: 1.1rem; color: var(--gold);">TRAINSHIER POS AUDIT</div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>(+) Base de Caja (Apertura):</span>
+          <strong>{{ initialCash | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>(+) Ventas Registradas (Efectivo):</span>
+          <strong>{{ cashSalesTotal | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-soft); padding-bottom: 8px; margin-bottom: 8px;">
+          <span>(+) Ventas Registradas (Tarjetas):</span>
+          <strong>{{ cardSalesTotal | currency:'COP':'symbol-narrow':'1.0-0' }}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 1rem; font-weight: 700; color: var(--gold); margin-top: 5px;">
+          <span>(=) Efectivo Esperado en Caja:</span>
+          <span>{{ (initialCash + cashSalesTotal) | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+        </div>
+      </div>
+
+      <!-- Conteo físico entrada -->
+      <div style="margin-bottom: 25px; text-align: left;" *ngIf="!arqueoResult">
+        <label style="display: block; font-size: 0.85rem; color: var(--text-soft); margin-bottom: 8px; font-weight: 600;">Efectivo Físico Contado en Caja (COP):</label>
+        <input 
+          type="number" 
+          [(ngModel)]="physicalCashCount" 
+          placeholder="Digita el dinero físico en la gaveta..."
+          style="width: 100%; padding: 12px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border-soft); border-radius: 8px; outline: none; font-size: 1.1rem; font-weight: 700; box-sizing: border-box;"
+        >
+      </div>
+
+      <!-- Resultados del arqueo (Sobrante/Faltante) -->
+      <div *ngIf="arqueoResult" style="border-radius: 12px; padding: 20px; margin-bottom: 25px; text-align: left; border: 1px solid;"
+           [style.background]="arqueoResult.status === 'CUADRADO' ? 'rgba(16,185,129,0.08)' : arqueoResult.status === 'SOBRANTE' ? 'rgba(245,158,11,0.08)' : 'rgba(239,68,68,0.08)'"
+           [style.borderColor]="arqueoResult.status === 'CUADRADO' ? 'rgba(16,185,129,0.3)' : arqueoResult.status === 'SOBRANTE' ? 'rgba(245,158,11,0.3)' : 'rgba(239,68,68,0.3)'">
+        <h4 style="margin: 0 0 8px 0; font-size: 1.1rem; font-weight: 700;"
+            [style.color]="arqueoResult.status === 'CUADRADO' ? '#10b981' : arqueoResult.status === 'SOBRANTE' ? '#f59e0b' : '#ef4444'">
+          Resultado: {{ arqueoResult.status }}
+        </h4>
+        <p style="margin: 0 0 12px 0; font-size: 0.88rem; color: var(--text); line-height: 1.4;">{{ arqueoResult.message }}</p>
+        <div style="font-family: monospace; font-size: 0.85rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px; display: grid; gap: 4px; color: var(--text-soft);">
+          <div style="display: flex; justify-content: space-between;">
+            <span>Efectivo Físico Contado:</span>
+            <span style="color: var(--text);">{{ physicalCashCount | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>Efectivo Esperado:</span>
+            <span style="color: var(--text);">{{ arqueoResult.expected | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-weight: 700; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 4px;">
+            <span>Diferencia de Caja:</span>
+            <span [style.color]="arqueoResult.status === 'CUADRADO' ? '#10b981' : arqueoResult.status === 'SOBRANTE' ? '#f59e0b' : '#ef4444'">
+              {{ (arqueoResult.difference > 0 ? '+' : '') }}{{ arqueoResult.difference | currency:'COP':'symbol-narrow':'1.0-0' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones de control -->
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button 
+          type="button" 
+          *ngIf="!arqueoResult"
+          (click)="cancelArqueo()" 
+          style="background: transparent; color: var(--text-soft); border: 1px solid var(--border-soft); padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem;"
+        >
+          Regresar a Venta
+        </button>
+        <button 
+          type="button" 
+          *ngIf="!arqueoResult"
+          (click)="calculateArqueo()" 
+          style="background: var(--accent); color: white; border: none; padding: 10px 25px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem;"
+        >
+          Conciliar y Hacer Arqueo
+        </button>
+        
+        <button 
+          type="button" 
+          *ngIf="arqueoResult"
+          (click)="arqueoResult = null" 
+          style="background: transparent; color: var(--text-soft); border: 1px solid var(--border-soft); padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem;"
+        >
+          Modificar Conteo
+        </button>
+        <button 
+          type="button" 
+          *ngIf="arqueoResult"
+          (click)="submitArqueoAndFinish()" 
+          style="background: #10b981; color: white; border: none; padding: 10px 30px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(16,185,129,0.25);"
+        >
+          Cerrar Caja y Terminar Simulación
         </button>
       </div>
     </div>
