@@ -118,11 +118,8 @@ export class SimulatorComponent implements OnInit {
   chatMessageInput: string = '';
   isChatLoading: boolean = false;
 
-  // Barcode scanner logic (webcam and physical emulated scanner)
-  showScanner: boolean = false;
-  hasDevices: boolean = false;
-  availableDevices: MediaDeviceInfo[] = [];
-  currentDevice: MediaDeviceInfo | undefined = undefined;
+  // Barcode search modal
+  showSearchProductsModal: boolean = false;
   private scanBuffer: string = '';
   private lastScanTime: number = 0;
 
@@ -1002,6 +999,57 @@ export class SimulatorComponent implements OnInit {
   /* =========================================
       SCENARIO SELECTOR, WEB CAMERA SCANNER, AND AI CHAT CUSTOMER METHODS
   ========================================= */
+  generateCustomerRequest(mood: string): { request: string, message: string, patience: number } {
+    let patience = 5;
+    if (mood === 'Amable') patience = 5;
+    else if (mood === 'Impaciente') patience = 3;
+    else if (mood === 'Enojado') patience = 2;
+    else if (mood === 'Confundido') patience = 4;
+
+    const orderItems: { product: Product, qty: number }[] = [];
+    if (this.products && this.products.length > 0) {
+      const count = Math.min(Math.floor(Math.random() * 3) + 1, this.products.length);
+      const tempProducts = [...this.products];
+      for (let i = 0; i < count; i++) {
+        const idx = Math.floor(Math.random() * tempProducts.length);
+        const prod = tempProducts.splice(idx, 1)[0];
+        const qty = Math.floor(Math.random() * 3) + 1; // 1 to 3 units
+        orderItems.push({ product: prod, qty });
+      }
+    } else {
+      orderItems.push({
+        product: { id: 1, name: 'Leche 1L', price: 4500, stock: 50, barcode: '7701001001', code: '7701001001' },
+        qty: 2
+      });
+      orderItems.push({
+        product: { id: 2, name: 'Pan Integral', price: 5500, stock: 40, barcode: '7701001002', code: '7701001002' },
+        qty: 1
+      });
+    }
+
+    const requestSummary = orderItems.map(item => `${item.qty}x ${item.product.name}`).join(', ');
+
+    let welcome = '';
+    if (mood === 'Amable') {
+      welcome = 'Hola, buenos días. ¿Cómo estás? Quisiera llevar estos productos:';
+    } else if (mood === 'Impaciente') {
+      welcome = 'Hola. Tengo el tiempo justo, por favor cobra esto rápido:';
+    } else if (mood === 'Enojado') {
+      welcome = 'El servicio siempre está demorado aquí. Espero que hoy cobren bien estos productos:';
+    } else if (mood === 'Confundido') {
+      welcome = 'Disculpe, ¿estos productos tienen el descuento del calendario de hoy? Quisiera llevar:';
+    }
+
+    let itemsList = '';
+    orderItems.forEach(item => {
+      itemsList += `\n• ${item.qty} unidad(es) de ${item.product.name} [Código de barras: ${item.product.barcode || item.product.code}]`;
+    });
+
+    const message = `${welcome}${itemsList}`;
+
+    return { request: requestSummary, message, patience };
+  }
+
   generateCustomerScenario(): void {
     const names = ['Carlos Gómez', 'Laura Rodríguez', 'Patricia Jaramillo', 'Juan Carlos Pérez', 'Martha Lucía Pinzón', 'Andrés Felipe Castro', 'Sofía Beltrán'];
     const selectedName = names[Math.floor(Math.random() * names.length)];
@@ -1011,40 +1059,17 @@ export class SimulatorComponent implements OnInit {
     
     this.currentCustomer.name = selectedName;
     this.currentCustomer.mood = mood;
+
+    const data = this.generateCustomerRequest(mood);
+    this.currentCustomer.patience = data.patience;
+    this.currentCustomer.request = data.request;
+    this.currentCustomer.message = data.message;
     
-    let patience = 5;
-    let request = '';
-    let message = '';
-    
-    if (mood === 'Amable') {
-      patience = 5;
-      this.customerSatisfaction = 100;
-      request = '2 Leches 1L, 1 Pan Integral';
-      message = 'Hola, buenos días. ¿Cómo estás? Quisiera llevar esto, por favor.';
-    } else if (mood === 'Impaciente') {
-      patience = 3;
-      this.customerSatisfaction = 75;
-      request = '3 Gaseosas Cola, 1 Chocolate';
-      message = 'Hola. Tengo el tiempo justo, por favor cobra esto rápido.';
-    } else if (mood === 'Enojado') {
-      patience = 2;
-      this.customerSatisfaction = 50;
-      request = '1 Arroz Premium, 2 Chocolates';
-      message = 'El servicio siempre está demorado aquí. Espero que hoy cobren bien.';
-    } else if (mood === 'Confundido') {
-      patience = 4;
-      this.customerSatisfaction = 85;
-      request = '1 Pan Integral, 1 Leche 1L';
-      message = 'Disculpe, ¿este producto tiene el descuento del calendario de hoy? No entiendo.';
-    }
-    
-    this.currentCustomer.patience = patience;
-    this.currentCustomer.request = request;
-    this.currentCustomer.message = message;
+    this.customerSatisfaction = mood === 'Amable' ? 100 : mood === 'Impaciente' ? 75 : mood === 'Enojado' ? 50 : 85;
     
     this.chatMessages = [
       { sender: 'Sistema', text: `Simulación iniciada. Cliente: ${selectedName}. Actitud: ${mood}. Dificultad: ${this.selectedDifficulty}.` },
-      { sender: selectedName, text: message }
+      { sender: selectedName, text: data.message }
     ];
   }
 
@@ -1057,39 +1082,14 @@ export class SimulatorComponent implements OnInit {
     
     this.currentCustomer.name = selectedName;
     this.currentCustomer.mood = randomMood;
-    
-    let patience = 5;
-    let request = '';
-    let message = '';
-    
-    if (randomMood === 'Amable') {
-      patience = 5;
-      this.customerSatisfaction = 100;
-      request = '1 Arroz Premium, 1 Gaseosa Cola';
-      message = 'Buenas tardes, espero no molestar. Cobraría esto, por favor.';
-    } else if (randomMood === 'Impaciente') {
-      patience = 3;
-      this.customerSatisfaction = 75;
-      request = '2 Pan Integral, 2 Gaseosas Cola';
-      message = 'Rápido por favor, se me pasa el autobús.';
-    } else if (randomMood === 'Enojado') {
-      patience = 2;
-      this.customerSatisfaction = 50;
-      request = '1 Leche 1L';
-      message = '¿Me va a atender ya? Hay fila.';
-    } else if (randomMood === 'Confundido') {
-      patience = 4;
-      this.customerSatisfaction = 85;
-      request = '3 Chocolates';
-      message = '¿Los chocolates tienen promoción hoy? No veo el cartel.';
-    }
-    
-    this.currentCustomer.patience = patience;
-    this.currentCustomer.request = request;
-    this.currentCustomer.message = message;
+
+    const data = this.generateCustomerRequest(randomMood);
+    this.currentCustomer.patience = data.patience;
+    this.currentCustomer.request = data.request;
+    this.currentCustomer.message = data.message;
     
     this.chatMessages.push({ sender: 'Sistema', text: `Siguiente cliente en fila: ${selectedName} (${randomMood}).` });
-    this.chatMessages.push({ sender: selectedName, text: message });
+    this.chatMessages.push({ sender: selectedName, text: data.message });
   }
 
   sendMessageToCustomer(): void {
@@ -1197,21 +1197,16 @@ export class SimulatorComponent implements OnInit {
     this.showToast(`Escaneado: ${product.name} (${product.price} COP)`);
   }
 
-  onCodeResult(resultString: string): void {
-    this.processScannedBarcode(resultString);
-    this.showScanner = false;
-  }
-
-  onCamerasFound(devices: MediaDeviceInfo[]): void {
-    this.availableDevices = devices;
-    this.hasDevices = devices && devices.length > 0;
-    if (this.hasDevices) {
-      this.currentDevice = devices[0];
+  selectAndAddProduct(product: Product): void {
+    if (!this.simulationStarted) {
+      this.showToast('Debes iniciar la simulación antes de agregar productos', true);
+      return;
     }
-  }
-
-  onDeviceSelectChange(selectedValue: string): void {
-    const device = this.availableDevices.find(d => d.deviceId === selectedValue);
-    this.currentDevice = device;
+    if (product.stock <= 0) {
+      this.showToast(`El producto ${product.name} no tiene stock`, true);
+      return;
+    }
+    this.addToCart(product);
+    this.showToast(`Agregado: ${product.name}`);
   }
 }

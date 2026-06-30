@@ -86,26 +86,53 @@
     <!-- PANEL PRINCIPAL (IZQUIERDO): OPERACIÓN DE CAJA -->
     <div class="main-panel">
 
-      <!-- ENTRADA DE FACTURACIÓN (DOBLE PROPÓSITO: PISTOLA Y MANUAL) -->
-      <div class="card">
+      <!-- BIENVENIDA E INSTRUCCIONES (SOLO ANTES DE INICIAR) -->
+      <div class="card" *ngIf="!simulationStarted">
+        <h2 style="color: var(--gold); font-size: 1.45rem; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+          💼 Simulador de Punto de Venta TrainShier
+        </h2>
+        <p style="color: var(--text-soft); font-size: 0.95rem; line-height: 1.6; margin-bottom: 15px;">
+          Practica el registro de mercancías, el cálculo dinámico del IVA por producto, y la conciliación de caja mediante auditorías sorpresa (arqueo de caja).
+        </p>
+        <div style="background: var(--surface-2); border-left: 4px solid var(--gold); padding: 15px 18px; border-radius: 8px; font-size: 0.88rem; color: var(--text-soft); line-height: 1.55; margin-bottom: 5px;">
+          <strong style="color: var(--text); display: block; margin-bottom: 6px;">Guía de Operación:</strong>
+          <ol style="margin: 0; padding-left: 20px;">
+            <li>Configura la dificultad y la actitud del cliente en el panel de la derecha.</li>
+            <li>Inicia la simulación y declara el fondo de caja inicial (Base de Apertura).</li>
+            <li>Revisa el pedido del cliente en pantalla. Escanea o escribe los códigos de barra provistos.</li>
+            <li>Registra el pago correspondiente en efectivo o tarjeta.</li>
+            <li>Finaliza la jornada comercial realizando la conciliación sorpresa (Arqueo de Caja).</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- ENTRADA DE FACTURACIÓN (SOLO CUANDO INICIA SIMULACIÓN) -->
+      <div class="card" *ngIf="simulationStarted">
         <h2>Registro de Productos (Facturación)</h2>
-        <div class="scan-section">
+        <div class="scan-section" style="display: flex; gap: 10px; align-items: center;">
           <input
             type="text"
             placeholder="Escanee con la pistola o digite el código..."
             [(ngModel)]="productCode"
             (keyup.enter)="registerByCode()"
             [disabled]="!simulationStarted"
+            style="flex: 1;"
             autofocus>
-          <button (click)="registerByCode()" [disabled]="!simulationStarted">Registrar Código</button>
-          <button class="scanner-cam-btn" (click)="showScanner = true" [disabled]="!simulationStarted">
-            📷 Escanear Cámara
+          <button (click)="registerByCode()" [disabled]="!simulationStarted" class="primary-btn">Registrar Código</button>
+          <button 
+            type="button" 
+            (click)="showSearchProductsModal = true" 
+            [disabled]="!simulationStarted" 
+            class="secondary-btn" 
+            style="background: var(--surface-2); border: 1px solid var(--border-soft); color: var(--gold); font-weight: 600; padding: 10px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px;"
+          >
+            🔍 Buscar Producto
           </button>
         </div>
       </div>
 
-      <!-- TABLA DEL CARRITO DE COMPRAS CON INTERACCIÓN DE MODIFICACIÓN -->
-      <div class="card">
+      <!-- TABLA DEL CARRITO DE COMPRAS CON INTERACCIÓN DE MODIFICACIÓN (SOLO CUANDO INICIA SIMULACIÓN) -->
+      <div class="card" *ngIf="simulationStarted">
         <h2>Venta Actual (Carrito)</h2>
         <table>
           <thead>
@@ -145,10 +172,10 @@
         </table>
       </div>
 
-      <!-- VISUALIZADOR DE INVENTARIO -->
-      <div class="card">
+      <!-- GESTIÓN DEL CATÁLOGO DE PRODUCTOS (SOLO ANTES DE INICIAR PARA INSTRUCTOR) -->
+      <div class="card" *ngIf="!simulationStarted && (role === 'INSTRUCTOR' || role === 'ADMINISTRADOR' || role === 'ADMIN')">
         <div class="inventory-header-row">
-          <h2>Inventario de Productos</h2>
+          <h2>Catálogo y Gestión de Productos</h2>
 
           <div class="search-container">
             <input
@@ -269,7 +296,7 @@
       </div>
 
       <!-- RESUMEN DE FACTURA -->
-      <div class="card" *ngIf="!h">
+      <div class="card" *ngIf="simulationStarted && !h">
         <h2>Liquidación</h2>
         <div class="invoice-row">
           <span>Subtotal</span>
@@ -298,7 +325,7 @@
       </div>
 
       <!-- CAJA REGISTRADORA Y PASARELA DE DINERO -->
-      <div class="card" *ngIf="h">
+      <div class="card" *ngIf="simulationStarted && h">
         <h2>Caja y Pago</h2>
         <div class="invoice-row total">
           <span>Total</span>
@@ -334,7 +361,7 @@
       </div>
 
       <!-- CALENDARIO COMERCIAL -->
-      <div class="card">
+      <div class="card" *ngIf="!simulationStarted">
         <h2>Calendario Comercial</h2>
         <input type="date" [(ngModel)]="saleDate" (change)="updateSpecialDay()" [disabled]="simulationStarted">
         <div class="promotion-card">
@@ -344,7 +371,7 @@
       </div>
 
       <!-- SECCIÓN EXCLUSIVA DE GESTIÓN PARA EL INSTRUCTOR -->
-      <div class="card" *ngIf="role === 'INSTRUCTOR'">
+      <div class="card" *ngIf="!simulationStarted && role === 'INSTRUCTOR'">
         <h2>Gestión de Productos</h2>
         <div class="form-grid">
           <input type="text" placeholder="Nombre" [(ngModel)]="newProduct.name">
@@ -362,7 +389,7 @@
       </div>
 
       <!-- HISTORIAL DE TICKETS GENERADOS -->
-      <div class="card">
+      <div class="card" *ngIf="!simulationStarted">
         <h2>Historial de Ventas</h2>
         <div class="history-container">
           <div *ngFor="let sale of salesHistory" class="history-item">
@@ -443,37 +470,100 @@
 
   </div>
 
-  <!-- ZXING WEBCAM SCANNER OVERLAY -->
-  <div class="scanner-modal-overlay" *ngIf="showScanner">
-    <div class="scanner-modal">
-      <div class="scanner-modal-header">
-        <h3>Escanear Código de Barras (Cámara)</h3>
-        <button class="close-btn" (click)="showScanner = false">✕</button>
-      </div>
+  <!-- MODAL DE BÚSQUEDA DE PRODUCTOS -->
+  <div class="rfid-modal-overlay" *ngIf="showSearchProductsModal" (click)="showSearchProductsModal = false" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 99999; display: flex; align-items: center; justify-content: center; overflow-y: auto;">
+    <div class="rfid-modal animate-scale-in" (click)="$event.stopPropagation()" style="background: var(--surface); border: 1px solid var(--border-soft); border-radius: 16px; max-width: 800px; width: 95%; padding: 30px; box-shadow: var(--shadow-lg); text-align: left; margin: 20px auto;">
       
-      <div class="scanner-device-select" *ngIf="hasDevices">
-        <label for="cameraSelect">Seleccionar Cámara:</label>
-        <select id="cameraSelect" (change)="onDeviceSelectChange($any($event.target).value)">
-          <option *ngFor="let device of availableDevices" [value]="device.deviceId" [selected]="currentDevice?.deviceId === device.deviceId">
-            {{ device.label || 'Cámara ' + device.deviceId }}
-          </option>
-        </select>
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-soft); padding-bottom: 15px; margin-bottom: 20px;">
+        <h3 style="margin: 0; color: var(--gold); font-size: 1.4rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+          🔍 Catálogo de Productos y Búsqueda
+        </h3>
+        <button 
+          (click)="showSearchProductsModal = false" 
+          style="background: transparent; border: none; color: var(--text-soft); font-size: 1.5rem; cursor: pointer; line-height: 1;"
+        >
+          ✕
+        </button>
       </div>
-      
-      <div class="scanner-preview-window">
-        <zxing-scanner
-          [device]="currentDevice"
-          (scanSuccess)="onCodeResult($event)"
-          (camerasFound)="onCamerasFound($event)">
-        </zxing-scanner>
-        
-        <div class="scanner-laser-line"></div>
+
+      <div style="margin-bottom: 20px;">
+        <input
+          type="text"
+          placeholder="🔍 Buscar producto por nombre, código o código de barras..."
+          [(ngModel)]="searchQuery"
+          style="width: 100%; padding: 12px 16px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border-soft); border-radius: 8px; outline: none; font-size: 1rem; box-sizing: border-box;"
+        >
       </div>
-      
-      <div class="scanner-modal-footer">
-        <p class="scanner-tip">Enfoque el código de barras impreso en el producto frente a la lente.</p>
-        <button class="btn-cancel" (click)="showScanner = false">Cerrar Visor</button>
+
+      <div style="max-height: 380px; overflow-y: auto; border: 1px solid var(--border-soft); border-radius: 8px; background: var(--surface-2);">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+          <thead style="background: var(--surface); border-bottom: 1px solid var(--border-soft); position: sticky; top: 0; z-index: 10;">
+            <tr>
+              <th style="padding: 12px; color: var(--gold);">Código</th>
+              <th style="padding: 12px; color: var(--gold); text-align: center;">Código de Barras</th>
+              <th style="padding: 12px; color: var(--gold);">Nombre</th>
+              <th style="padding: 12px; color: var(--gold); text-align: right;">Precio (COP)</th>
+              <th style="padding: 12px; color: var(--gold); text-align: center;">Stock</th>
+              <th style="padding: 12px; color: var(--gold); text-align: center;">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr 
+              *ngFor="let product of filteredProducts" 
+              (click)="selectAndAddProduct(product)"
+              style="border-bottom: 1px solid var(--border-soft); cursor: pointer; transition: background 0.2s;"
+              onmouseover="this.style.background='rgba(255,255,255,0.03)'"
+              onmouseout="this.style.background='transparent'"
+            >
+              <td style="padding: 12px; font-family: monospace;">{{ product.code }}</td>
+              <td style="padding: 12px; text-align: center;">
+                <div style="display: inline-block; background: white; padding: 2px; border-radius: 4px; border: 1px solid #ddd;">
+                  <img 
+                    *ngIf="product.barcode"
+                    [src]="'https://bwipjs-api.metafloor.com/?bcid=code128&text=' + product.barcode.trim() + '&scale=2&rotate=N&includetext'" 
+                    alt="Barcode" 
+                    style="max-width: 110px; height: 30px; display: block; margin: 0 auto;"
+                  >
+                </div>
+              </td>
+              <td style="padding: 12px; font-weight: 600; color: var(--text);">{{ product.name }}</td>
+              <td style="padding: 12px; text-align: right; font-weight: 700; color: var(--gold);">{{ product.price | currency:'COP':'symbol-narrow':'1.0-0' }}</td>
+              <td style="padding: 12px; text-align: center;">
+                <span 
+                  [style.color]="product.stock > 0 ? '#2ecc71' : '#e74c3c'"
+                  style="font-weight: 600;"
+                >
+                  {{ product.stock }}
+                </span>
+              </td>
+              <td style="padding: 12px; text-align: center;">
+                <button 
+                  type="button"
+                  style="background: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 0.8rem;"
+                >
+                  Agregar
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="filteredProducts.length === 0">
+              <td colspan="6" style="padding: 20px; text-align: center; color: var(--text-soft);">
+                No se encontraron productos coincidentes.
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+
+      <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+        <button 
+          type="button" 
+          (click)="showSearchProductsModal = false" 
+          style="background: var(--accent); color: white; border: none; padding: 10px 25px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem;"
+        >
+          Cerrar Catálogo
+        </button>
+      </div>
+
     </div>
   </div>
 
@@ -601,6 +691,9 @@
           Resultado: {{ arqueoResult.status }}
         </h4>
         <p style="margin: 0 0 12px 0; font-size: 0.88rem; color: var(--text); line-height: 1.4;">{{ arqueoResult.message }}</p>
+        <p *ngIf="arqueoResult.difference < 0" style="margin: 8px 0 0 0; font-size: 0.85rem; color: #ef4444; font-weight: 700; background: rgba(239,68,68,0.1); padding: 8px; border-radius: 4px; border-left: 3px solid #ef4444; line-height: 1.45;">
+          ⚠️ Regla del negocio: Todo faltante de caja será descontado directamente de tu salario.
+        </p>
         <div style="font-family: monospace; font-size: 0.85rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px; display: grid; gap: 4px; color: var(--text-soft);">
           <div style="display: flex; justify-content: space-between;">
             <span>Efectivo Físico Contado:</span>
