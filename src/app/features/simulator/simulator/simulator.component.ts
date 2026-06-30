@@ -114,7 +114,7 @@ export class SimulatorComponent implements OnInit {
   selectedMood: string = 'Amable';
   patienceValue: number = 100;
 
-  chatMessages: { sender: string; text: string }[] = [];
+  chatMessages: { sender: string; text: string; barcodes?: string[] }[] = [];
   chatMessageInput: string = '';
   isChatLoading: boolean = false;
 
@@ -999,7 +999,7 @@ export class SimulatorComponent implements OnInit {
   /* =========================================
       SCENARIO SELECTOR, WEB CAMERA SCANNER, AND AI CHAT CUSTOMER METHODS
   ========================================= */
-  generateCustomerRequest(mood: string): { request: string, message: string, patience: number } {
+  generateCustomerRequest(mood: string): { request: string, message: string, patience: number, barcodes: string[] } {
     let patience = 5;
     if (mood === 'Amable') patience = 5;
     else if (mood === 'Impaciente') patience = 3;
@@ -1041,13 +1041,19 @@ export class SimulatorComponent implements OnInit {
     }
 
     let itemsList = '';
+    const barcodes: string[] = [];
     orderItems.forEach(item => {
-      itemsList += `\n• ${item.qty} unidad(es) de ${item.product.name} [Código de barras: ${item.product.barcode || item.product.code}]`;
+      itemsList += `\n• ${item.qty} unidad(es) de ${item.product.name}`;
+      if (item.product.barcode) {
+        for (let q = 0; q < item.qty; q++) {
+          barcodes.push(item.product.barcode);
+        }
+      }
     });
 
     const message = `${welcome}${itemsList}`;
 
-    return { request: requestSummary, message, patience };
+    return { request: requestSummary, message, patience, barcodes };
   }
 
   generateCustomerScenario(): void {
@@ -1069,7 +1075,7 @@ export class SimulatorComponent implements OnInit {
     
     this.chatMessages = [
       { sender: 'Sistema', text: `Simulación iniciada. Cliente: ${selectedName}. Actitud: ${mood}. Dificultad: ${this.selectedDifficulty}.` },
-      { sender: selectedName, text: data.message }
+      { sender: selectedName, text: data.message, barcodes: data.barcodes }
     ];
   }
 
@@ -1089,7 +1095,7 @@ export class SimulatorComponent implements OnInit {
     this.currentCustomer.message = data.message;
     
     this.chatMessages.push({ sender: 'Sistema', text: `Siguiente cliente en fila: ${selectedName} (${randomMood}).` });
-    this.chatMessages.push({ sender: selectedName, text: data.message });
+    this.chatMessages.push({ sender: selectedName, text: data.message, barcodes: data.barcodes });
   }
 
   sendMessageToCustomer(): void {
