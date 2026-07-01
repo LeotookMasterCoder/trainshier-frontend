@@ -67,6 +67,6 @@ export class AppComponent implements OnInit {
   }
 
   showAssistant(): boolean {
-    return this.router.url !== '/simulator';
+    return true;
   }
 }
