@@ -567,13 +567,13 @@ export class SimulatorComponent implements OnInit {
     this.timer = setInterval(() => {
       this.timeLeft--;
       
-      let patienceReduction = 1.5;
+      let patienceReduction = 0.4;
       if (this.currentCustomer.mood === 'Impaciente') {
-        patienceReduction = 3.0;
+        patienceReduction = 0.9;
       } else if (this.currentCustomer.mood === 'Enojado') {
-        patienceReduction = 4.5;
+        patienceReduction = 1.2;
       } else if (this.currentCustomer.mood === 'Confundido') {
-        patienceReduction = 2.0;
+        patienceReduction = 0.6;
       }
       
       if (this.difficulty === 'DIFICIL') {
@@ -1093,6 +1093,8 @@ export class SimulatorComponent implements OnInit {
     this.currentCustomer.patience = data.patience;
     this.currentCustomer.request = data.request;
     this.currentCustomer.message = data.message;
+    
+    this.customerSatisfaction = randomMood === 'Amable' ? 100 : randomMood === 'Impaciente' ? 75 : randomMood === 'Enojado' ? 50 : 85;
     
     this.chatMessages.push({ sender: 'Sistema', text: `Siguiente cliente en fila: ${selectedName} (${randomMood}).` });
     this.chatMessages.push({ sender: selectedName, text: data.message, barcodes: data.barcodes });
